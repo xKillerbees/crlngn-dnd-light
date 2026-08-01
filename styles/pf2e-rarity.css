@@ -1,0 +1,188 @@
+/**
+ * Carolingian UI — D&D Light: PF2e rarity and proficiency colours
+ *
+ * The problem this file fixes:
+ *
+ * Carolingian's src/styles/systems/pf2e-sheets.css (lines 46-61) replaces the
+ * Pathfinder 2e system's rarity and proficiency colours with desaturated 70%-alpha
+ * variants tuned for its dark teal theme — uncommon #98513d becomes
+ * rgba(168,112,95,.7), rare #002664 becomes rgba(74,106,148,.7), and so on. On a
+ * parchment background those wash out to roughly the same beige, which is why
+ * rarity stops being readable at a glance.
+ *
+ * The values restored below are the system's own, read from
+ * foundryvtt/pf2e src/styles/_colors.scss (lines 111-122). PF2e paints
+ * `.tag.rarity.<rarity>` with them as background-color (src/styles/_tags.scss,
+ * lines 56-78), so restoring the variables is enough to fix the solid tags; the
+ * `--tag-color` rules further down handle the outline "light" tag variant, where
+ * rarity shows as text colour rather than fill.
+ *
+ * The rarity and proficiency custom properties keep `!important` even though the
+ * anchor (see theme.css) already outranks Carolingian's 0-6-1 declaration. This is
+ * the one thing the module exists to fix, and Carolingian's PF2e stylesheet is 1718
+ * lines that change between releases; a selector arms race here would be a silent
+ * regression waiting to happen. Dorako UI marks the same properties for the same
+ * reason (sass/module-support/_workbench.scss). Everything else in this file relies
+ * on specificity alone, so it stays overridable from Carolingian's Custom CSS box.
+ *
+ * Gated on `crlngn-dl-rarity`, so the "Restore PF2e rarity colors" setting can turn
+ * the whole file off.
+ */
+
+/* ---------------------------------------- */
+/*  System values, restored                 */
+/* ---------------------------------------- */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .app,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .application,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .themed.theme-light,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .themed.theme-dark,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .application.compendium-browser,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .tags {
+  --color-rarity-common: #323232 !important;
+  --color-rarity-uncommon: #98513d !important;
+  --color-rarity-rare: #002664 !important;
+  --color-rarity-unique: #54166e !important;
+
+  /* Some sheet areas and several modules read the unprefixed family. */
+  --rarity-common: #323232 !important;
+  --rarity-uncommon: #98513d !important;
+  --rarity-rare: #002664 !important;
+  --rarity-unique: #54166e !important;
+
+  --color-proficiency-untrained: #424242 !important;
+  --color-proficiency-trained: #171f69 !important;
+  --color-proficiency-expert: #3c005e !important;
+  --color-proficiency-master: #664400 !important;
+  --color-proficiency-legendary: #5e0000 !important;
+}
+
+/* ---------------------------------------- */
+/*  Outline tags: rarity as text colour     */
+/* ---------------------------------------- */
+/*
+ * `.tags.light > .tag` and `.tags > .tag.light` take both their border and their
+ * text from --tag-color (pf2e src/styles/_tags.scss, line 191). Carolingian pins
+ * that to --color-text-primary sheet-wide (pf2e-sheets.css line 26), which is what
+ * flattens rarity out of the text. Re-scoping it per rarity restores the tint
+ * without touching ordinary trait tags, which stay the sheet's text colour.
+ */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity {
+  .tag.rarity.common,
+  .tag.rarity[value="common"],
+  [data-rarity="common"] {
+    --tag-color: #323232 !important;
+  }
+
+  .tag.rarity.uncommon,
+  .tag.rarity[value="uncommon"],
+  [data-rarity="uncommon"] {
+    --tag-color: #98513d !important;
+  }
+
+  .tag.rarity.rare,
+  .tag.rarity[value="rare"],
+  [data-rarity="rare"] {
+    --tag-color: #002664 !important;
+  }
+
+  .tag.rarity.unique,
+  .tag.rarity[value="unique"],
+  [data-rarity="unique"] {
+    --tag-color: #54166e !important;
+  }
+}
+
+/* Solid rarity tags carry white text over the saturated fills above. */
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .tags:not(.light) > .tag.rarity:not(.light),
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .tags:not(.light) > select.tag.rarity {
+  color: #f8f4f1;
+}
+
+/* ---------------------------------------- */
+/*  Item names tinted by rarity             */
+/* ---------------------------------------- */
+/*
+ * The at-a-glance cue: an uncommon or rarer item reads in its rarity colour in
+ * inventory and spell lists, the way the system sheet does before Carolingian
+ * flattens it. Common is left alone so ordinary gear keeps the sheet's own text
+ * colour rather than turning grey.
+ */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity {
+  [data-rarity="uncommon"] > .item-name > h4,
+  [data-rarity="uncommon"] > .item-name > h3,
+  h4.item-name[data-rarity="uncommon"],
+  h3.item-name[data-rarity="uncommon"] {
+    color: #98513d;
+  }
+
+  [data-rarity="rare"] > .item-name > h4,
+  [data-rarity="rare"] > .item-name > h3,
+  h4.item-name[data-rarity="rare"],
+  h3.item-name[data-rarity="rare"] {
+    color: #002664;
+  }
+
+  [data-rarity="unique"] > .item-name > h4,
+  [data-rarity="unique"] > .item-name > h3,
+  h4.item-name[data-rarity="unique"],
+  h3.item-name[data-rarity="unique"] {
+    color: #54166e;
+  }
+}
+
+/* ---------------------------------------- */
+/*  PF2e Workbench                          */
+/* ---------------------------------------- */
+/*
+ * Carolingian recolours Workbench's rarity labels to pastels for a dark
+ * background (other-modules.css lines 1319-1338): #ca7a64, #6b9dec, #bb83f0.
+ * Those are near-invisible on parchment, so they go back to the system values.
+ * Plain specificity is enough here — Carolingian declares these from
+ * `body.crlngn-ui.crlngn-sheets` (0-3-1).
+ */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .xdy-pf2e-workbench-rarity-common {
+  border-color: #323232;
+  color: #323232;
+}
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .xdy-pf2e-workbench-rarity-uncommon {
+  border-color: #98513d;
+  color: #98513d;
+}
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .xdy-pf2e-workbench-rarity-rare {
+  border-color: #002664;
+  color: #002664;
+}
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .xdy-pf2e-workbench-rarity-unique {
+  border-color: #54166e;
+  color: #54166e;
+}
+
+/* ---------------------------------------- */
+/*  Dark scheme legibility                  */
+/* ---------------------------------------- */
+/*
+ * The system's rarity colours are chosen for parchment; #002664 on a dark panel is
+ * unreadable. Any surface still pinned to dark gets lightened variants of the same
+ * hues instead of the flat pastels.
+ */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .themed.theme-dark,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .app.theme-dark,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-rarity .application.theme-dark {
+  --color-rarity-common: #6e6e6e !important;
+  --color-rarity-uncommon: #c46a4f !important;
+  --color-rarity-rare: #3d6bb5 !important;
+  --color-rarity-unique: #9059b8 !important;
+  --rarity-common: #6e6e6e !important;
+  --rarity-uncommon: #c46a4f !important;
+  --rarity-rare: #3d6bb5 !important;
+  --rarity-unique: #9059b8 !important;
+}
