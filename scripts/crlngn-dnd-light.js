@@ -1,54 +1,74 @@
 /**
- * Carolingian UI — D&D Light (PF2e)
+ * Dorako UI + Carolingian Bridge (PF2e)
  *
- * This module ships no layout of its own. It is a palette overlay: it toggles a
- * small set of classes on <html> and <body>, and the three stylesheets in
- * styles/ hang off those classes to repaint Carolingian UI in the D&D 5e-style
- * light theme borrowed from PF2e Dorako UI.
+ * Division of labour, and the reason this module is small:
  *
- * Why classes on both <html> and <body>: Carolingian UI writes its own palette
- * from two places — a static stylesheet (`body.crlngn-ui.crlngn-theme-*`) and a
- * runtime <style> element rebuilt by ColorPickerUtil.applyCustomTheme() whenever
- * its settings change (`body.crlngn-ui`, `body.crlngn-ui.game .app`). Because the
- * runtime element is appended to <head> after ours, DOM order can never be relied
- * on. Anchoring every selector to `html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light`
- * outruns all of them on specificity instead, so load order stops mattering.
+ *   PF2e Dorako UI  — windows, character sheets, chat, tooltips, dialogs, under
+ *                     its own dnd5e2-light theme. It is mature and already does
+ *                     this well; nothing here second-guesses it.
+ *   Carolingian UI  — scene navigation, combat carousel, players list. Its
+ *                     theming is switched off, its layout kept.
+ *   This module     — two jobs only. Repaint Carolingian's leftover chrome using
+ *                     Dorako's palette (styles/bridge.css), and configure both
+ *                     modules so they stop overlapping (applyRecommendedSetup).
  *
- * Why the stylesheets are injected here instead of declared in module.json:
+ * Why the stylesheet is injected here instead of declared in module.json:
  * Foundry v13+ assigns styles listed in a manifest's `styles` array to a CSS
- * cascade layer. Unlayered declarations beat layered ones outright, ahead of
- * specificity — so a manifest-declared sheet loses to any unlayered rule no matter
- * how specific it is. Carolingian's palette is unlayered on both counts: its
- * manifest ships `"styles": []` and it appends its own <link> from JS at init, and
- * the colour-picker <style> is injected at runtime. Declaring our styles the
- * ordinary way therefore lost every head-to-head against it; only the `!important`
- * rarity rules and the uncontested ones survived. Injecting real <link> elements
- * puts us in the same unlayered cascade, where the specificity work applies.
+ * cascade layer. Unlayered declarations beat layered ones ahead of specificity,
+ * so a manifest-declared sheet loses to any unlayered rule no matter how specific
+ * it is. Carolingian is unlayered on both counts — its manifest ships
+ * `"styles": []` and it appends its own <link> from JS at init, plus a runtime
+ * <style> from its colour picker. Declaring styles the ordinary way therefore
+ * lost every head-to-head against it, which is exactly how this module failed in
+ * v1.0.x. Injecting real <link> elements puts us in the same unlayered cascade.
  */
 
 const MODULE_ID = "crlngn-dnd-light";
+const CRLNGN = "crlngn-ui";
+const DORAKO = "pf2e-dorako-ui";
 
-/** Stylesheets, in cascade order. Injected as unlayered <link>s — see the note above. */
-const STYLESHEETS = ["styles/theme.css", "styles/sheets.css", "styles/pf2e-rarity.css"];
+/** Injected as unlayered <link>s — see the note above. */
+const STYLESHEETS = ["styles/bridge.css"];
 
-/** Classes toggled on the document root and body, keyed by the setting that owns each. */
-const TOGGLES = {
-  enabled: "crlngn-dnd-light",
-  restoreRarityColors: "crlngn-dl-rarity",
-  parchmentSheets: "crlngn-dl-parchment",
-};
+/**
+ * Settings changed by applyRecommendedSetup.
+ *
+ * The Carolingian keys are `v2-`-prefixed kebab-case rather than the camelCase
+ * names its settings menus display — read from its src/constants/Settings.mjs,
+ * not guessed. Its combat tracker and scene navigation settings are deliberately
+ * absent: those are the features being kept.
+ */
+const RECOMMENDED = [
+  { mod: CRLNGN, key: "v2-apply-theme-and-styles", value: false, why: "Dorako themes sheets" },
+  { mod: CRLNGN, key: "v2-enable-chat-styles", value: false, why: "Dorako themes chat" },
+  { mod: CRLNGN, key: "v2-enable-journal-styles", value: false, why: "Dorako themes journals" },
+  { mod: CRLNGN, key: "v2-adjust-other-modules", value: false, why: "Dorako handles module support" },
+  { mod: DORAKO, key: "theme.application-theme", value: "dnd5e2-light", why: "D&D light windows" },
+  { mod: DORAKO, key: "theme.interface-theme", value: "dnd5e2-light", why: "D&D light interface" },
+  { mod: DORAKO, key: "theme.chat-message-standard-theme", value: "dnd5e2-light", why: "D&D light chat" },
+];
 
 /** Tracks whether the color scheme has already been forced this session. */
 let schemeForced = false;
 
 /**
- * Injects the stylesheets as unlayered <link> elements, or moves them back to the
- * end of <head> if they are already there.
- *
- * Re-appending matters because Carolingian rebuilds its runtime palette <style> on
- * every settings change, which lands it after us. Our selectors outrank it, so this
- * is belt-and-braces rather than load-bearing — but it costs nothing and removes
- * cascade order as a variable entirely.
+ * Reads a module setting, tolerating the window before registration completes.
+ * @param {string} key
+ * @param {boolean} fallback
+ * @returns {boolean}
+ */
+function setting(key, fallback = true) {
+  try {
+    return game.settings.get(MODULE_ID, key) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Injects the stylesheet as an unlayered <link>, or moves it back to the end of
+ * <head> if already present. Re-appending is belt-and-braces: our selectors
+ * outrank Carolingian's, but it removes cascade order as a variable entirely.
  */
 function injectStyles() {
   const version = game.modules.get(MODULE_ID)?.version ?? "0";
@@ -63,47 +83,18 @@ function injectStyles() {
   }
 }
 
-/**
- * Reads a module setting, tolerating the window between registration and first
- * access (Foundry throws for unregistered keys).
- * @param {string} key
- * @param {boolean} fallback
- * @returns {boolean}
- */
-function setting(key, fallback = true) {
-  try {
-    return game.settings.get(MODULE_ID, key) ?? fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-/**
- * Syncs every toggle class onto <html> and <body>. The master `enabled` switch
- * gates the others, so turning the module off strips all of them and leaves
- * Carolingian UI's own palette untouched.
- */
+/** Syncs the bridge class onto <html> and <body>. */
 function applyClasses() {
-  const root = document.documentElement;
-  const body = document.body;
-  if (!body) return;
-
+  if (!document.body) return;
   const on = setting("enabled");
-  for (const [key, cls] of Object.entries(TOGGLES)) {
-    const active = on && (key === "enabled" || setting(key));
-    root.classList.toggle(cls, active);
-    body.classList.toggle(cls, active);
-  }
+  document.documentElement.classList.toggle(MODULE_ID, on);
+  document.body.classList.toggle(MODULE_ID, on);
 }
 
 /**
- * Forces this client's Foundry color scheme to light.
- *
- * The theme is a light theme; Carolingian UI keys most of its own palette off
- * the `theme-light` / `theme-dark` classes Foundry derives from core's uiConfig,
- * so leaving the client on dark would fight every rule in styles/theme.css.
- * `core.uiConfig` is client-scoped, so this only ever changes the local user's
- * preference, and only when it is not already light.
+ * Forces this client's Foundry color scheme to light. `core.uiConfig` is
+ * client-scoped, so this only ever changes the local user's preference, and only
+ * when it is not already light.
  */
 async function forceLightScheme() {
   if (schemeForced) return;
@@ -122,18 +113,117 @@ async function forceLightScheme() {
   try {
     await game.settings.set("core", "uiConfig", updated);
     schemeForced = true;
-    console.log(`${MODULE_ID} | forced this client's color scheme to light`);
   } catch (err) {
-    console.error(`${MODULE_ID} | could not set core color scheme to light:`, err);
+    console.error(`${MODULE_ID} | could not set color scheme to light:`, err);
   }
 }
 
 /**
- * Registers the four client-scoped toggles. Each one only adds or removes a
- * class, so `requiresReload` is never needed.
+ * Writes the recommended settings into Carolingian UI and Dorako UI.
+ *
+ * Each write is attempted independently and failures are collected rather than
+ * thrown: some of these are world-scoped and will be refused for non-GMs, and a
+ * key renamed upstream should not take the rest of the setup down with it. The
+ * caller reports exactly what changed and what did not.
+ *
+ * @returns {Promise<{changed: string[], skipped: string[], failed: string[]}>}
  */
+async function applyRecommendedSetup() {
+  const changed = [], skipped = [], failed = [];
+
+  for (const { mod, key, value, why } of RECOMMENDED) {
+    if (!game.modules.get(mod)?.active) {
+      skipped.push(`${mod} not active — ${key}`);
+      continue;
+    }
+    try {
+      const current = game.settings.get(mod, key);
+      if (current === value) {
+        skipped.push(`${key} already ${value}`);
+        continue;
+      }
+      await game.settings.set(mod, key, value);
+      changed.push(`${key}: ${current} → ${value} (${why})`);
+    } catch (err) {
+      failed.push(`${key}: ${err.message}`);
+    }
+  }
+
+  console.log(`${MODULE_ID} | recommended setup`, { changed, skipped, failed });
+  return { changed, skipped, failed };
+}
+
+/** Confirmation dialog for the setup helper, then reports the result. */
+async function promptRecommendedSetup() {
+  const rows = RECOMMENDED.map(
+    (r) => `<li><code>${r.mod}</code> → <code>${r.key}</code> = <b>${r.value}</b><br>
+            <span style="opacity:.75">${r.why}</span></li>`
+  ).join("");
+
+  const ok = await foundry.applications.api.DialogV2.confirm({
+    window: { title: game.i18n.localize(`${MODULE_ID}.setup.title`) },
+    content: `<p>${game.i18n.localize(`${MODULE_ID}.setup.intro`)}</p>
+              <ul style="line-height:1.6">${rows}</ul>
+              <p>${game.i18n.localize(`${MODULE_ID}.setup.note`)}</p>`,
+    rejectClose: false,
+    modal: true,
+  });
+  if (!ok) return;
+
+  const { changed, skipped, failed } = await applyRecommendedSetup();
+
+  if (failed.length) {
+    ui.notifications.error(
+      game.i18n.format(`${MODULE_ID}.setup.failed`, { count: failed.length }),
+      { permanent: true }
+    );
+  }
+  ui.notifications.info(
+    game.i18n.format(`${MODULE_ID}.setup.done`, {
+      changed: changed.length,
+      skipped: skipped.length,
+    })
+  );
+  if (changed.length) SettingsMenu.promptReload();
+}
+
+/** Offers a reload, since Carolingian and Dorako both re-theme on load. */
+class SettingsMenu {
+  static async promptReload() {
+    const reload = await foundry.applications.api.DialogV2.confirm({
+      window: { title: game.i18n.localize(`${MODULE_ID}.setup.reloadTitle`) },
+      content: `<p>${game.i18n.localize(`${MODULE_ID}.setup.reloadBody`)}</p>`,
+      rejectClose: false,
+      modal: true,
+    });
+    if (reload) foundry.utils.debouncedReload();
+  }
+}
+
+/**
+ * Menu shim so "Apply recommended setup" can be a button in the settings list.
+ * Foundry expects a constructible Application here; this one does its work on
+ * render and never actually opens a window.
+ */
+class SetupMenu extends foundry.applications.api.ApplicationV2 {
+  static DEFAULT_OPTIONS = { id: `${MODULE_ID}-setup`, window: { title: `${MODULE_ID}.setup.title` } };
+  async render() {
+    await promptRecommendedSetup();
+    return this;
+  }
+}
+
 function registerSettings() {
   const reapply = () => applyClasses();
+
+  game.settings.registerMenu(MODULE_ID, "runSetup", {
+    name: `${MODULE_ID}.setup.menuName`,
+    label: `${MODULE_ID}.setup.menuLabel`,
+    hint: `${MODULE_ID}.setup.menuHint`,
+    icon: "fas fa-wand-magic-sparkles",
+    type: SetupMenu,
+    restricted: false,
+  });
 
   game.settings.register(MODULE_ID, "enabled", {
     name: `${MODULE_ID}.settings.enabled.name`,
@@ -159,24 +249,12 @@ function registerSettings() {
     },
   });
 
-  game.settings.register(MODULE_ID, "restoreRarityColors", {
-    name: `${MODULE_ID}.settings.restoreRarityColors.name`,
-    hint: `${MODULE_ID}.settings.restoreRarityColors.hint`,
+  // Set once the setup helper has run, so the first-launch prompt appears only once.
+  game.settings.register(MODULE_ID, "setupDone", {
     scope: "client",
-    config: true,
+    config: false,
     type: Boolean,
-    default: true,
-    onChange: reapply,
-  });
-
-  game.settings.register(MODULE_ID, "parchmentSheets", {
-    name: `${MODULE_ID}.settings.parchmentSheets.name`,
-    hint: `${MODULE_ID}.settings.parchmentSheets.hint`,
-    scope: "client",
-    config: true,
-    type: Boolean,
-    default: true,
-    onChange: reapply,
+    default: false,
   });
 }
 
@@ -187,25 +265,25 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", async () => {
-  if (!game.modules.get("crlngn-ui")?.active) {
-    ui.notifications?.warn(game.i18n.localize(`${MODULE_ID}.notifications.missingCrlngn`), {
-      permanent: true,
-    });
-  }
-  if (game.modules.get("pf2e-dorako-ui")?.active) {
-    ui.notifications?.warn(game.i18n.localize(`${MODULE_ID}.notifications.dorakoActive`), {
-      permanent: true,
-    });
+  const missing = [CRLNGN, DORAKO].filter((id) => !game.modules.get(id)?.active);
+  if (missing.length) {
+    ui.notifications.warn(
+      game.i18n.format(`${MODULE_ID}.notifications.missing`, { modules: missing.join(", ") }),
+      { permanent: true }
+    );
   }
 
   await forceLightScheme();
   injectStyles();
   applyClasses();
+
+  // First launch with both modules present: offer to configure them.
+  if (!missing.length && !game.settings.get(MODULE_ID, "setupDone")) {
+    await game.settings.set(MODULE_ID, "setupDone", true);
+    await promptRecommendedSetup();
+  }
 });
 
-// Carolingian UI rebuilds its runtime palette <style> on its own settings changes
-// and can re-run its body-class pass at the same time. Re-assert our classes and
-// stylesheet order after any setting write so the overlay never ends up half-applied.
 Hooks.on("closeSettingsConfig", () => {
   injectStyles();
   applyClasses();

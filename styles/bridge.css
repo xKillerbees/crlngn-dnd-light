@@ -1,0 +1,232 @@
+/**
+ * Dorako UI + Carolingian Bridge — chrome palette
+ *
+ * Division of labour: PF2e Dorako UI owns everything it is good at — windows,
+ * character sheets, chat, tooltips, dialogs — under its own dnd5e2-light theme.
+ * Carolingian UI keeps only its scene navigation, combat carousel and players
+ * list. This file exists because those three are the one thing Dorako cannot
+ * theme: Carolingian replaces their DOM wholesale, so Dorako's selectors never
+ * match them and they stay in Carolingian's own accent colour.
+ *
+ * So this is a small file by design. It repaints Carolingian's leftover chrome
+ * and nothing else. Earlier versions of this module tried to restyle sheets too
+ * and lost a 1718-line fight with Carolingian's pf2e-sheets.css; that whole
+ * surface now belongs to Dorako, which already does it properly.
+ *
+ * Colours are read from Dorako's own variables rather than copied. Dorako
+ * declares its full --dnd5e-* palette at :root unconditionally, so
+ * `var(--dnd5e-color-gold)` resolves whenever Dorako is installed. Fallbacks are
+ * supplied so nothing collapses to blank if Dorako is missing or renames one.
+ *
+ * On the repeated class: Carolingian writes its palette from a static stylesheet
+ * and from a runtime <style> its colour picker rebuilds on every settings change,
+ * appended to <head> after everything else. Load order is therefore never
+ * reliable, and its PF2e selectors reach 0-6-1. Repeating `.crlngn-dnd-light`
+ * lifts the anchor to 0-5-2 so specificity decides instead of order. Verified —
+ * a single occurrence loses.
+ *
+ * These rules only work because the stylesheet is injected as an unlayered
+ * <link> from scripts/. Styles declared in a manifest's `styles` array land in a
+ * CSS cascade layer, and unlayered rules beat layered ones ahead of specificity,
+ * so a manifest-declared copy loses every contested rule regardless. See the
+ * note in scripts/crlngn-dnd-light.js.
+ */
+
+/* ---------------------------------------- */
+/*  Palette, sourced from Dorako            */
+/* ---------------------------------------- */
+
+/*
+ * Aliased on <html>, deliberately, not on <body>.
+ *
+ * Carolingian reassigns several of Dorako's variables to its own accent inside
+ * `body.crlngn-ui` — including `--dnd5e-color-maroon: var(--color-highlights)`.
+ * Sourcing our palette on <body> therefore created a cycle:
+ *   --cdl-maroon -> --dnd5e-color-maroon -> --color-highlights -> --cdl-maroon
+ * CSS resolves cycles by invalidating every property involved, so the whole
+ * maroon family silently computed to nothing while gold — which Carolingian does
+ * not touch — worked. Caught in the harness; the symptom was an empty
+ * `--color-highlights`, not an obviously wrong colour.
+ *
+ * On <html> the Dorako values are still pristine, so these resolve once here and
+ * inherit downward as computed colours. Carolingian's body-level reassignments
+ * then have nothing left to feed back into.
+ */
+html.crlngn-dnd-light {
+  --cdl-parchment: var(--dnd5e-color-parchment, #f1ebe8);
+  --cdl-card: var(--dnd5e-color-card, #f8f4f1);
+  --cdl-groove: var(--dnd5e-color-groove, #eeede0);
+  --cdl-faint: var(--dnd5e-color-faint, #c9c7b8);
+  --cdl-beige: var(--dnd5e-color-beige, #b5b3a4);
+  --cdl-tan: var(--dnd5e-color-tan, #7a7971);
+  --cdl-olive: var(--dnd5e-color-olive, #4b4a44);
+  --cdl-gold: var(--dnd5e-color-gold, #9f9275);
+  --cdl-maroon: var(--dnd5e-color-maroon, #741b2b);
+  --cdl-ink: var(--dnd5e-color-dark, #191813);
+
+  /* Alpha variants. color-mix keeps these tied to the sourced colours above
+     rather than hardcoding a second copy; Dorako uses the same technique. */
+  --cdl-gold-15: color-mix(in srgb, var(--cdl-gold) 15%, transparent);
+  --cdl-gold-25: color-mix(in srgb, var(--cdl-gold) 25%, transparent);
+  --cdl-gold-50: color-mix(in srgb, var(--cdl-gold) 50%, transparent);
+  --cdl-gold-75: color-mix(in srgb, var(--cdl-gold) 75%, transparent);
+  --cdl-maroon-15: color-mix(in srgb, var(--cdl-maroon) 15%, transparent);
+  --cdl-maroon-25: color-mix(in srgb, var(--cdl-maroon) 25%, transparent);
+  --cdl-maroon-50: color-mix(in srgb, var(--cdl-maroon) 50%, transparent);
+  --cdl-maroon-75: color-mix(in srgb, var(--cdl-maroon) 75%, transparent);
+  --cdl-maroon-light: color-mix(in srgb, var(--cdl-maroon) 70%, white);
+  --cdl-maroon-dark: color-mix(in srgb, var(--cdl-maroon) 80%, black);
+}
+
+/* ---------------------------------------- */
+/*  Carolingian's accent family             */
+/* ---------------------------------------- */
+/*
+ * Carolingian derives every accent from a single hue. D&D's sheet uses two, so
+ * they are split the way Dorako's theme splits them: maroon for anything reading
+ * as text or state, gold for anything reading as an edge. Without that split this
+ * looks like a maroon-tinted Carolingian rather than like Dorako.
+ */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light #interface,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light #interface.theme-light,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light #interface.theme-dark {
+  --color-highlights: var(--cdl-maroon);
+  --color-highlights-15: var(--cdl-maroon-15);
+  --color-highlights-25: var(--cdl-maroon-25);
+  --color-highlights-50: var(--cdl-maroon-50);
+  --color-highlights-75: var(--cdl-maroon-75);
+  --color-highlights-90: var(--cdl-maroon);
+
+  --color-warm-1: var(--cdl-maroon-light);
+  --color-warm-2: var(--cdl-maroon);
+  --color-warm-3: var(--cdl-maroon-dark);
+
+  /* Edges gold. */
+  --color-border-highlight: var(--cdl-gold);
+  --color-border-highlight-alt: var(--cdl-gold-75);
+  --color-border-light-highlight: var(--cdl-gold);
+  --color-border-light-primary: var(--cdl-gold-50);
+  --color-shadow-highlight: var(--cdl-gold-50);
+  --color-shadow-primary: color-mix(in srgb, var(--cdl-ink) 25%, transparent);
+  --color-scrollbar: var(--cdl-gold-75);
+  --color-scrollbar-border: var(--cdl-gold-75);
+  --color-scrollbar-track: transparent;
+
+  /* State maroon. */
+  --color-underline-header: var(--cdl-maroon);
+  --color-underline-active: var(--cdl-maroon);
+  --color-text-hyperlink: var(--cdl-maroon);
+  --color-text-accent: var(--cdl-maroon);
+  --control-active-border-color: var(--cdl-maroon);
+  --control-active-bg-color: var(--cdl-maroon);
+  --control-active-icon-color: var(--cdl-card);
+  --toggle-active-bg-color: var(--cdl-maroon-50);
+  --toggle-active-border-color: var(--cdl-maroon-75);
+}
+
+/* ---------------------------------------- */
+/*  Chrome surfaces                         */
+/* ---------------------------------------- */
+/*
+ * Scoped to #interface and Carolingian's own elements rather than to body, so the
+ * bridge cannot leak into app windows where Dorako is in charge.
+ */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light #interface,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light #interface.theme-light,
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light #interface.theme-dark {
+  --color-secondary: var(--cdl-beige);
+  --color-secondary-bright: var(--cdl-card);
+  --color-secondary-bright-50: color-mix(in srgb, var(--cdl-card) 50%, transparent);
+  --color-secondary-15: color-mix(in srgb, var(--cdl-beige) 15%, transparent);
+  --color-secondary-25: color-mix(in srgb, var(--cdl-beige) 25%, transparent);
+  --color-secondary-50: color-mix(in srgb, var(--cdl-beige) 50%, transparent);
+  --color-secondary-65: color-mix(in srgb, var(--cdl-beige) 65%, transparent);
+  --color-secondary-75: color-mix(in srgb, var(--cdl-beige) 75%, transparent);
+  --color-secondary-90: color-mix(in srgb, var(--cdl-beige) 90%, transparent);
+  --color-secondary-b: var(--cdl-groove);
+  --color-secondary-b-25: color-mix(in srgb, var(--cdl-groove) 25%, transparent);
+  --color-secondary-b-50: color-mix(in srgb, var(--cdl-groove) 50%, transparent);
+  --color-secondary-b-75: color-mix(in srgb, var(--cdl-groove) 75%, transparent);
+  --color-secondary-b-90: color-mix(in srgb, var(--cdl-groove) 90%, transparent);
+
+  --control-bg-color: color-mix(in srgb, var(--cdl-parchment) 97%, transparent);
+  --control-bg-color-90: color-mix(in srgb, var(--cdl-parchment) 90%, transparent);
+  --sidebar-background: color-mix(in srgb, var(--cdl-parchment) 95%, transparent);
+  --background: color-mix(in srgb, var(--cdl-parchment) 96%, transparent);
+  --card-color-bg: var(--cdl-card);
+
+  --color-cool-3: var(--cdl-gold);
+  --color-cool-4: var(--cdl-faint);
+  --color-cool-5: var(--cdl-parchment);
+  --color-cool-5-0: color-mix(in srgb, var(--cdl-parchment) 0%, transparent);
+  --color-cool-5-25: color-mix(in srgb, var(--cdl-parchment) 25%, transparent);
+  --color-cool-5-50: color-mix(in srgb, var(--cdl-parchment) 50%, transparent);
+  --color-cool-5-75: color-mix(in srgb, var(--cdl-parchment) 75%, transparent);
+  --color-cool-5-90: color-mix(in srgb, var(--cdl-parchment) 97%, transparent);
+
+  --color-text-primary: var(--cdl-ink);
+  --color-text-secondary: var(--cdl-olive);
+  --color-text-emphatic: var(--cdl-ink);
+  --color-text-inverse: var(--cdl-card);
+  --color-text-inverted: var(--cdl-card);
+  --default-color: var(--cdl-ink);
+  --color-sidebar-font: var(--cdl-ink);
+
+  --color-bg-button: var(--cdl-card);
+  --crlngn-button-bg: var(--cdl-gold-15);
+  --color-bg-alt: var(--cdl-card);
+  --color-alt-bg: color-mix(in srgb, var(--cdl-ink) 8%, transparent);
+  --color-border: var(--cdl-faint);
+  --color-border-dark-5: var(--cdl-gold);
+  --color-fieldset-border: var(--cdl-faint);
+
+  --control-border-color: var(--cdl-gold);
+  --control-icon-color: var(--cdl-ink);
+  --control-hover-bg-color: var(--cdl-card);
+  --control-hover-border-color: var(--cdl-gold);
+  --control-hover-icon-color: var(--cdl-maroon);
+  --control-button-border-color: var(--cdl-gold);
+
+  /* Hatching on inactive controls, rebuilt warm so it reads on parchment. */
+  --control-striped-bg: repeating-linear-gradient(
+    -45deg, var(--cdl-gold-25) 0px, var(--cdl-gold-25) 1px,
+    color-mix(in srgb, var(--cdl-groove) 75%, transparent) 2px,
+    color-mix(in srgb, var(--cdl-groove) 75%, transparent) 3px);
+  --control-striped-bg-2: repeating-linear-gradient(
+    -45deg, var(--cdl-gold-50) 0px, var(--cdl-gold-50) 1px,
+    var(--cdl-gold-25) 2px, var(--cdl-gold-25) 3px);
+  --striped-bg: repeating-linear-gradient(
+    -45deg, color-mix(in srgb, var(--cdl-beige) 50%, transparent) 0px,
+    color-mix(in srgb, var(--cdl-beige) 50%, transparent) 1px,
+    color-mix(in srgb, var(--cdl-beige) 22%, transparent) 2px,
+    color-mix(in srgb, var(--cdl-beige) 22%, transparent) 3px);
+  --striped-bg-2: repeating-linear-gradient(
+    -45deg, color-mix(in srgb, var(--cdl-tan) 28%, transparent) 0px,
+    color-mix(in srgb, var(--cdl-tan) 28%, transparent) 1px,
+    color-mix(in srgb, var(--cdl-olive) 18%, transparent) 2px,
+    color-mix(in srgb, var(--cdl-olive) 18%, transparent) 3px);
+}
+
+/* ---------------------------------------- */
+/*  Contrast on accent-filled elements      */
+/* ---------------------------------------- */
+/*
+ * The active scene tab and active combatant sit on maroon fill. Carolingian
+ * hardcodes --color-light-1 for their labels in a few places, which is correct
+ * over maroon, but its own text-primary is not — so these are pinned explicitly.
+ */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light {
+  #scene-navigation .nav-item.active,
+  #scene-navigation .scene-nav-item.active,
+  #navigation .nav-item.active,
+  #combat .combatant.active .token-name,
+  .crlngn-carousel .combatant.active .combatant-name,
+  #combat-carousel .combatant.active .combatant-name {
+    --color-text-primary: var(--cdl-card);
+    color: var(--cdl-card);
+  }
+}

@@ -1,8 +1,8 @@
 {
   "id": "crlngn-dnd-light",
-  "title": "Carolingian UI — D&D Light (PF2e)",
-  "description": "Re-skins Carolingian UI with the D&D 5e-style light theme from PF2e Dorako UI: parchment backgrounds, gold borders, maroon accents, dark text. Also restores Pathfinder 2e's item rarity and proficiency rank colors, which Carolingian UI flattens out on character sheets.",
-  "version": "1.1.0",
+  "title": "Dorako UI + Carolingian Bridge (PF2e)",
+  "description": "Runs PF2e Dorako UI's D&D light theme alongside Carolingian UI's scene navigation and combat carousel. Dorako owns sheets, chat and windows; Carolingian keeps its navigation and tracker; this bridges the two so they stop competing.",
+  "version": "2.0.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14"
@@ -15,7 +15,7 @@
   ],
   "url": "https://github.com/xKillerbees/crlngn-dnd-light",
   "manifest": "https://raw.githubusercontent.com/xKillerbees/crlngn-dnd-light/refs/heads/main/module.json",
-  "download": "https://github.com/xKillerbees/crlngn-dnd-light/releases/download/v1.1.0/module.zip",
+  "download": "https://github.com/xKillerbees/crlngn-dnd-light/releases/download/v2.0.0/module.zip",
   "readme": "https://github.com/xKillerbees/crlngn-dnd-light#readme",
   "bugs": "https://github.com/xKillerbees/crlngn-dnd-light/issues",
   "license": "https://mit-license.org/",
@@ -37,13 +37,14 @@
         "compatibility": {
           "minimum": "4.0.0"
         }
-      }
-    ],
-    "conflicts": [
+      },
       {
         "id": "pf2e-dorako-ui",
         "type": "module",
-        "reason": "Both modules restyle the same Foundry elements. Disable PF2e Dorako UI — this module reproduces its D&D light palette on top of Carolingian UI."
+        "manifest": "https://github.com/Dorako/pf2e-dorako-ui/releases/latest/download/module.json",
+        "compatibility": {
+          "minimum": "1.11.0"
+        }
       }
     ]
   },

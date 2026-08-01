@@ -1,141 +1,122 @@
-# Carolingian UI — D&D Light (PF2e)
+# Dorako UI + Carolingian Bridge (PF2e)
 
-Keeps [Carolingian UI](https://github.com/crlngn/crlngn-ui)'s combat tracker, scene
-navigation and sheet layout, and repaints it in the D&D 5e-style light theme from
-[PF2e Dorako UI](https://github.com/Dorako/pf2e-Dorako-UI) — parchment, gold borders,
-maroon accents, dark text. Also puts back Pathfinder 2e's item rarity colours, which
-Carolingian flattens out.
+Runs [PF2e Dorako UI](https://github.com/Dorako/pf2e-Dorako-UI)'s D&D light theme as the
+primary look, while keeping [Carolingian UI](https://github.com/crlngn/crlngn-ui)'s scene
+navigation and combat carousel.
 
-This is a palette overlay, not a fork. It ships no layout of its own.
+The two modules normally fight, because both restyle the same elements. This one splits
+the work between them and repaints the seam.
 
-## Install
-
-Manual install — this is not on the Foundry package registry.
-
-1. Copy the `crlngn-dnd-light` folder into your Foundry data directory under
-   `Data/modules/`, so you end up with `Data/modules/crlngn-dnd-light/module.json`.
-2. Restart Foundry, then enable **Carolingian UI — D&D Light (PF2e)** in
-   *Manage Modules*.
-
-Requirements:
-
-- **Carolingian UI (`crlngn-ui`) must stay installed and active.** This module only
-  redefines its variables; on its own it does nothing.
-- **Disable PF2e Dorako UI.** Both modules restyle the same elements and will fight.
-  The palette you want is reproduced here. The module warns you if it sees Dorako
-  active.
-
-## What it does
-
-**Palette.** Dorako's `dnd5e2` light theme could not simply be copied — it publishes
-its colours into its own `--dui-*` / `--color-primary-N` namespace, which Carolingian
-never reads. The colours are Dorako's, translated onto Carolingian's variable names:
+## Who does what
 
 | | |
 |---|---|
-| Parchment `#f1ebe8` | window backgrounds |
-| Card `#f8f4f1` | raised panels, fieldsets, buttons |
-| Gold `#9f9275` | borders, scrollbars, filigree |
-| Maroon `#741b2b` | accents, links, underlines, active items |
-| Ink `#191813` | text |
+| **Dorako UI** | Windows, character sheets, chat, tooltips, dialogs — its own `dnd5e2-light` theme |
+| **Carolingian UI** | Scene navigation, combat carousel, players list. Its theming is switched off, its layout kept |
+| **This module** | Repaints Carolingian's leftover chrome in Dorako's palette, and configures both so they stop overlapping |
 
-D&D's sheet uses two accent hues where Carolingian derives everything from one:
-maroon for anything that reads as text or state, gold for anything that reads as an
-edge. Splitting them is what makes it look like the 5e sheet rather than a
-maroon-tinted Carolingian.
+Carolingian replaces the scene nav and combat tracker DOM wholesale, so Dorako's selectors
+never match them — they'd otherwise stay in Carolingian's own accent colour while
+everything around them went parchment. That seam is the only thing this module styles.
 
-**Rarity colours.** Carolingian's `pf2e-sheets.css` replaces PF2e's rarity and
-proficiency colours with desaturated 70%-alpha variants tuned for its dark teal
-theme, and pins `--tag-color` to a single flat value sheet-wide. On parchment those
-all wash out to roughly the same beige. The system's own values go back:
+## Install
 
-| | Carolingian UI | restored |
-|---|---|---|
-| common | `rgba(138,138,138,.7)` | `#323232` |
-| uncommon | `rgba(168,112,95,.7)` | `#98513d` |
-| rare | `rgba(74,106,148,.7)` | `#002664` |
-| unique | `rgba(122,80,144,.7)` | `#54166e` |
+Foundry → *Add-on Modules* → *Install Module* → **Manifest URL**:
 
-Same for the five proficiency ranks. Item names in inventory and spell lists are also
-tinted by rarity — common is left alone so ordinary gear keeps the sheet's text
-colour. PF2e Workbench's rarity labels are restored too.
+```
+https://raw.githubusercontent.com/xKillerbees/crlngn-dnd-light/refs/heads/main/module.json
+```
 
-Values are read from `foundryvtt/pf2e` `src/styles/_colors.scss`, lines 111-122.
+Requires **both** `crlngn-ui` and `pf2e-dorako-ui` installed and active. Unlike v1.x, Dorako
+should now be **enabled** — it is the primary theme.
+
+On first launch it offers to apply the recommended setup. You can re-run it any time from
+*Configure Settings → Dorako UI + Carolingian Bridge → Apply recommended setup*.
+
+## What the setup changes
+
+| module | setting | to | why |
+|---|---|---|---|
+| crlngn-ui | `v2-apply-theme-and-styles` | off | Dorako themes sheets |
+| crlngn-ui | `v2-enable-chat-styles` | off | Dorako themes chat |
+| crlngn-ui | `v2-enable-journal-styles` | off | Dorako themes journals |
+| crlngn-ui | `v2-adjust-other-modules` | off | Dorako handles module support |
+| pf2e-dorako-ui | `theme.application-theme` | `dnd5e2-light` | |
+| pf2e-dorako-ui | `theme.interface-theme` | `dnd5e2-light` | |
+| pf2e-dorako-ui | `theme.chat-message-standard-theme` | `dnd5e2-light` | |
+
+Carolingian's combat tracker and scene navigation settings are deliberately untouched —
+those are the features being kept. Each write is attempted independently, so a
+world-scoped setting refused for a non-GM, or a key renamed upstream, won't take the rest
+down with it; the result reports what changed and what didn't.
+
+**Item rarity colours are fixed by this setup, not by CSS.** Carolingian's rarity
+overrides live inside `body.crlngn-ui.crlngn-sheets`, so turning off its sheet styling
+drops the class and Pathfinder 2e's own colours return — uncommon `#98513d`, rare
+`#002664`, unique `#54166e`. Verified: with the class removed the overrides don't just
+change, they stop applying entirely.
+
+## Notes for anyone editing this
+
+Two non-obvious things, both found the hard way.
+
+**Styles are injected as `<link>`s from `scripts/`, not declared in `module.json`.**
+Foundry v13+ assigns manifest-declared styles to a CSS cascade layer, and unlayered rules
+beat layered ones *ahead of specificity*. Carolingian is unlayered on both counts — its
+manifest ships `"styles": []` and it appends its own `<link>` from JS, plus a runtime
+`<style>` from its colour picker. A manifest-declared stylesheet therefore loses every
+contested rule no matter how specific it is, which is exactly how v1.0.x failed: only
+`!important` rules and uncontested ones survived.
+
+**The palette is aliased on `<html>`, not `<body>`.** Carolingian reassigns several of
+Dorako's variables to its own accent inside `body.crlngn-ui`, including
+`--dnd5e-color-maroon: var(--color-highlights)`. Sourcing the palette on `<body>` creates
+a cycle — `--cdl-maroon` → `--dnd5e-color-maroon` → `--color-highlights` → `--cdl-maroon` —
+and CSS resolves cycles by invalidating every property involved. The whole maroon family
+silently computed to nothing while gold worked, because Carolingian doesn't touch gold. On
+`<html>` the Dorako values are still pristine.
+
+Colours are read from Dorako's variables (`var(--dnd5e-color-gold)` etc.), which it
+declares at `:root` unconditionally, with hardcoded fallbacks so nothing collapses if
+Dorako is absent or renames one.
+
+The repeated `.crlngn-dnd-light` in selectors is deliberate: it lifts the anchor to 0-5-2
+so specificity decides rather than load order, since Carolingian's runtime `<style>` is
+appended after everything else. A single occurrence loses.
 
 ## Settings
 
-All client-scoped, so each player chooses independently.
-
-| Setting | Default | |
+| setting | default | |
 |---|---|---|
-| Enable D&D Light theme | on | Master switch. Off = plain Carolingian UI. |
-| Force light color scheme | on | Sets *your* Foundry colour scheme to light. This is a light theme and Carolingian keys its palette off Foundry's light/dark classes, so dark will look wrong. |
-| Restore PF2e rarity colors | on | The rarity and proficiency fix above. |
-| Parchment sheets and windows | on | Parchment backgrounds, gold borders, maroon tabs. Off keeps the colours but leaves Carolingian's flat window styling. |
+| Enable bridge theme | on | Master switch. Off = Carolingian's nav and tracker revert to their own colours. Dorako unaffected. |
+| Force light color scheme | on | Sets *your* Foundry colour scheme to light to match `dnd5e2-light`. Client-scoped. |
 
-## How it stays on top
+## Status
 
-Carolingian writes its palette from three places, all of which have to be outranked:
+Verified in a browser harness that loads Carolingian's real stylesheets alongside Dorako's
+`:root` palette and asserts computed values, including reproductions of Foundry's
+cascade-layer behaviour and Carolingian's runtime colour-picker `<style>`. The harness uses
+an approximation of the interface DOM rather than a running Foundry, so expect spot-fixing
+in less common corners.
 
-- static presets — `body.crlngn-ui.crlngn-theme-*` (0-2-1)
-- a runtime `<style>` its colour picker rebuilds on every settings change, appended
-  to `<head>` after every stylesheet — `body.crlngn-ui`, `body.crlngn-ui.game .app`
-- PF2e-specific rules as deep as
-  `body.crlngn-ui.crlngn-sheets.theme-light .app.pf2e.sheet` (0-6-1)
-
-Because the runtime element is appended last, load order can never be relied on. So
-every selector here is anchored to
-`html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light`
-(0-5-2) instead, which wins on specificity regardless of order. The class is repeated
-deliberately — a single occurrence gives 0-3-2 and loses to 0-6-1 on class count, which
-in testing left character sheets on Carolingian's lilac secondary colour.
-
-The stylesheets are injected as `<link>` elements from `scripts/`, not declared in
-`module.json`. Foundry v13+ assigns manifest-declared styles to a CSS cascade layer,
-and unlayered rules beat layered ones *ahead of specificity* — so a manifest-declared
-sheet loses every contested rule against Carolingian no matter how specific it is.
-Carolingian is unlayered on both counts (`"styles": []` plus a JS-injected `<link>`,
-and a runtime `<style>` from its colour picker). Injecting real `<link>`s puts this
-module in the same unlayered cascade, where the specificity work above applies.
-
-Only the rarity and proficiency custom properties use `!important`. That is the one
-thing this module exists to fix, and Carolingian's PF2e stylesheet is 1718 lines that
-change between releases. Everything else relies on specificity alone and stays
-overridable from Carolingian's own **Custom CSS** setting.
-
-## Tweaking colours
-
-Source colours are declared once at the top of `styles/theme.css` as `--cdl-*`, then
-mapped onto Carolingian's variables below. For a different accent, change
-`rgb(116, 27, 43)` (maroon) and `rgb(159, 146, 117)` (gold) throughout that file.
-
-`module.json` declares `hotReload` for `.css`, so edits apply without restarting
-Foundry.
-
-## Caveats
-
-- Verified in a browser harness that loads Carolingian's actual stylesheets and
-  asserts computed values, including a reproduction of Foundry's cascade-layer
-  behaviour. The harness uses a hand-built approximation of the sheet DOM rather than
-  real rendered PF2e sheets, so expect some spot-fixing in less common sheet areas.
-- Carolingian UI's own colour picker and theme presets are overridden while this
-  module is enabled.
-- No fonts or textures are shipped. Dorako's `dnd5e2` theme layers two `.webp`
-  textures plus the dnd5e system's `parchment.jpg`; none can be relied on in a PF2e
-  world. The paper grain here is a pair of low-contrast radial gradients instead.
-- Tested against Carolingian UI 4.0.1 (Foundry v13-v14, PF2e 7.x).
+Tested against Carolingian UI 4.0.1, Dorako UI 1.11.3, Foundry v13–v14, PF2e 7.x–8.x.
 
 ## Layout
 
 ```
 crlngn-dnd-light/
 ├── module.json
-├── scripts/crlngn-dnd-light.js   toggles classes, forces light scheme, settings
-├── styles/theme.css              palette translation
-├── styles/sheets.css             parchment windows, gold borders, maroon tabs
-├── styles/pf2e-rarity.css        rarity + proficiency restoration
+├── scripts/crlngn-dnd-light.js   style injection, setup helper, settings
+├── styles/bridge.css             Carolingian's chrome, in Dorako's palette
 └── lang/en.json
 ```
 
-Carolingian UI is MIT. Dorako UI's colour values are used under its licence; no code
-or assets from either module are redistributed here.
+Carolingian UI is MIT. Dorako UI's colour values are referenced through its own CSS
+variables; no code or assets from either module are redistributed here.
+
+### History
+
+v1.x tried the opposite arrangement — Dorako disabled, Carolingian primary, with this
+module reproducing the D&D palette on top of it. That meant fighting Carolingian's
+1718-line PF2e stylesheet for the sheets, a fight worth avoiding when Dorako already does
+that job properly.

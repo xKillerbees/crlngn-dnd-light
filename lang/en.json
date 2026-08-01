@@ -2,25 +2,28 @@
   "crlngn-dnd-light": {
     "settings": {
       "enabled": {
-        "name": "Enable D&D Light theme",
-        "hint": "Master switch. When off, Carolingian UI falls back to its own colour theme and nothing in this module applies."
+        "name": "Enable bridge theme",
+        "hint": "Master switch. When off, Carolingian UI's scene navigation and combat tracker revert to their own colours. Dorako UI is unaffected either way."
       },
       "forceLightScheme": {
         "name": "Force light color scheme",
-        "hint": "Sets this client's Foundry color scheme to light for both applications and interface. This is a light theme, and Carolingian UI keys most of its palette off Foundry's light/dark classes, so leaving the client on dark will look wrong. Affects only you, and you can change it back in Foundry's own settings."
-      },
-      "restoreRarityColors": {
-        "name": "Restore PF2e rarity colors",
-        "hint": "Puts back Pathfinder 2e's own item rarity and proficiency rank colors (uncommon #98513d, rare #002664, unique #54166e), which Carolingian UI replaces with washed-out variants. Also tints item names in inventory and spell lists by rarity."
-      },
-      "parchmentSheets": {
-        "name": "Parchment sheets and windows",
-        "hint": "Applies the D&D parchment background, gold borders and maroon tabs to windows and character sheets. Turn off to keep the light color palette but leave Carolingian UI's flat window styling alone."
+        "hint": "Sets this client's Foundry color scheme to light for both applications and interface, to match Dorako's dnd5e2-light theme. Affects only you, and you can change it back in Foundry's own settings."
       }
     },
+    "setup": {
+      "menuName": "Recommended setup",
+      "menuLabel": "Apply recommended setup",
+      "menuHint": "Configures Carolingian UI and Dorako UI so they stop overlapping: Dorako themes sheets, chat and windows, while Carolingian keeps its scene navigation and combat tracker.",
+      "title": "Apply recommended setup",
+      "intro": "This will change the following settings so the two modules stop competing for the same elements:",
+      "note": "Carolingian's scene navigation and combat tracker settings are left alone — those are the features being kept. Turning off its sheet styling also restores Pathfinder 2e's own item rarity colours.",
+      "done": "Recommended setup applied. {changed} setting(s) changed, {skipped} already correct.",
+      "failed": "{count} setting(s) could not be changed — see the console (F12) for details. World-scoped settings require GM permission.",
+      "reloadTitle": "Reload Foundry?",
+      "reloadBody": "Carolingian UI and Dorako UI both apply their themes at load, so a reload is needed for these changes to take full effect."
+    },
     "notifications": {
-      "missingCrlngn": "Carolingian UI — D&D Light needs the Carolingian UI module (crlngn-ui) installed and active. Nothing will be themed until it is.",
-      "dorakoActive": "Carolingian UI — D&D Light: PF2e Dorako UI is also active. Both modules restyle the same elements and will conflict. Disable PF2e Dorako UI — this module already reproduces its D&D light palette."
+      "missing": "Dorako UI + Carolingian Bridge needs these modules installed and active: {modules}. The bridge will not do anything until they are."
     }
   }
 }
