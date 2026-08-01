@@ -2,7 +2,7 @@
   "id": "crlngn-dnd-light",
   "title": "Carolingian UI — D&D Light (PF2e)",
   "description": "Re-skins Carolingian UI with the D&D 5e-style light theme from PF2e Dorako UI: parchment backgrounds, gold borders, maroon accents, dark text. Also restores Pathfinder 2e's item rarity and proficiency rank colors, which Carolingian UI flattens out on character sheets.",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14"
@@ -15,7 +15,7 @@
   ],
   "url": "https://github.com/xKillerbees/crlngn-dnd-light",
   "manifest": "https://raw.githubusercontent.com/xKillerbees/crlngn-dnd-light/refs/heads/main/module.json",
-  "download": "https://github.com/xKillerbees/crlngn-dnd-light/releases/download/v1.0.1/module.zip",
+  "download": "https://github.com/xKillerbees/crlngn-dnd-light/releases/download/v1.1.0/module.zip",
   "readme": "https://github.com/xKillerbees/crlngn-dnd-light#readme",
   "bugs": "https://github.com/xKillerbees/crlngn-dnd-light/issues",
   "license": "https://mit-license.org/",
@@ -47,11 +47,7 @@
       }
     ]
   },
-  "styles": [
-    "styles/theme.css",
-    "styles/sheets.css",
-    "styles/pf2e-rarity.css"
-  ],
+  "styles": [],
   "esmodules": [
     "scripts/crlngn-dnd-light.js"
   ],

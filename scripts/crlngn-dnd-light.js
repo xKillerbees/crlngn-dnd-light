@@ -13,9 +13,23 @@
  * runtime element is appended to <head> after ours, DOM order can never be relied
  * on. Anchoring every selector to `html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light`
  * outruns all of them on specificity instead, so load order stops mattering.
+ *
+ * Why the stylesheets are injected here instead of declared in module.json:
+ * Foundry v13+ assigns styles listed in a manifest's `styles` array to a CSS
+ * cascade layer. Unlayered declarations beat layered ones outright, ahead of
+ * specificity — so a manifest-declared sheet loses to any unlayered rule no matter
+ * how specific it is. Carolingian's palette is unlayered on both counts: its
+ * manifest ships `"styles": []` and it appends its own <link> from JS at init, and
+ * the colour-picker <style> is injected at runtime. Declaring our styles the
+ * ordinary way therefore lost every head-to-head against it; only the `!important`
+ * rarity rules and the uncontested ones survived. Injecting real <link> elements
+ * puts us in the same unlayered cascade, where the specificity work applies.
  */
 
 const MODULE_ID = "crlngn-dnd-light";
+
+/** Stylesheets, in cascade order. Injected as unlayered <link>s — see the note above. */
+const STYLESHEETS = ["styles/theme.css", "styles/sheets.css", "styles/pf2e-rarity.css"];
 
 /** Classes toggled on the document root and body, keyed by the setting that owns each. */
 const TOGGLES = {
@@ -26,6 +40,28 @@ const TOGGLES = {
 
 /** Tracks whether the color scheme has already been forced this session. */
 let schemeForced = false;
+
+/**
+ * Injects the stylesheets as unlayered <link> elements, or moves them back to the
+ * end of <head> if they are already there.
+ *
+ * Re-appending matters because Carolingian rebuilds its runtime palette <style> on
+ * every settings change, which lands it after us. Our selectors outrank it, so this
+ * is belt-and-braces rather than load-bearing — but it costs nothing and removes
+ * cascade order as a variable entirely.
+ */
+function injectStyles() {
+  const version = game.modules.get(MODULE_ID)?.version ?? "0";
+  for (const path of STYLESHEETS) {
+    const id = `${MODULE_ID}-${path.split("/").pop().replace(".css", "")}`;
+    document.getElementById(id)?.remove();
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = `modules/${MODULE_ID}/${path}?v=${version}`;
+    document.head.appendChild(link);
+  }
+}
 
 /**
  * Reads a module setting, tolerating the window between registration and first
@@ -146,6 +182,7 @@ function registerSettings() {
 
 Hooks.once("init", () => {
   registerSettings();
+  injectStyles();
   applyClasses();
 });
 
@@ -162,10 +199,14 @@ Hooks.once("ready", async () => {
   }
 
   await forceLightScheme();
+  injectStyles();
   applyClasses();
 });
 
 // Carolingian UI rebuilds its runtime palette <style> on its own settings changes
-// and can re-run its body-class pass at the same time. Re-assert our classes after
-// any setting write so the overlay never ends up half-applied.
-Hooks.on("closeSettingsConfig", () => applyClasses());
+// and can re-run its body-class pass at the same time. Re-assert our classes and
+// stylesheet order after any setting write so the overlay never ends up half-applied.
+Hooks.on("closeSettingsConfig", () => {
+  injectStyles();
+  applyClasses();
+});

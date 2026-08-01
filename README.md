@@ -90,6 +90,14 @@ every selector here is anchored to
 deliberately — a single occurrence gives 0-3-2 and loses to 0-6-1 on class count, which
 in testing left character sheets on Carolingian's lilac secondary colour.
 
+The stylesheets are injected as `<link>` elements from `scripts/`, not declared in
+`module.json`. Foundry v13+ assigns manifest-declared styles to a CSS cascade layer,
+and unlayered rules beat layered ones *ahead of specificity* — so a manifest-declared
+sheet loses every contested rule against Carolingian no matter how specific it is.
+Carolingian is unlayered on both counts (`"styles": []` plus a JS-injected `<link>`,
+and a runtime `<style>` from its colour picker). Injecting real `<link>`s puts this
+module in the same unlayered cascade, where the specificity work above applies.
+
 Only the rarity and proficiency custom properties use `!important`. That is the one
 thing this module exists to fix, and Carolingian's PF2e stylesheet is 1718 lines that
 change between releases. Everything else relies on specificity alone and stays
@@ -106,11 +114,10 @@ Foundry.
 
 ## Caveats
 
-- **Not yet tested in a live Foundry world.** The palette and rarity fixes were
-  verified in a browser harness that loads Carolingian's actual stylesheets in the
-  worst-case order and asserts computed values (23 checks, all passing), but that
-  harness uses a hand-built approximation of the sheet DOM, not real rendered PF2e
-  sheets. Expect some spot-fixing on first run.
+- Verified in a browser harness that loads Carolingian's actual stylesheets and
+  asserts computed values, including a reproduction of Foundry's cascade-layer
+  behaviour. The harness uses a hand-built approximation of the sheet DOM rather than
+  real rendered PF2e sheets, so expect some spot-fixing in less common sheet areas.
 - Carolingian UI's own colour picker and theme presets are overridden while this
   module is enabled.
 - No fonts or textures are shipped. Dorako's `dnd5e2` theme layers two `.webp`
