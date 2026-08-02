@@ -2,7 +2,7 @@
   "id": "crlngn-dnd-light",
   "title": "Dorako UI + Carolingian Bridge (PF2e)",
   "description": "Runs PF2e Dorako UI's D&D light theme alongside Carolingian UI's scene navigation and combat carousel. Dorako owns sheets, chat and windows; Carolingian keeps its navigation and tracker; this bridges the two so they stop competing.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "compatibility": {
     "minimum": "13",
     "verified": "14"
@@ -15,7 +15,7 @@
   ],
   "url": "https://github.com/xKillerbees/crlngn-dnd-light",
   "manifest": "https://raw.githubusercontent.com/xKillerbees/crlngn-dnd-light/refs/heads/main/module.json",
-  "download": "https://github.com/xKillerbees/crlngn-dnd-light/releases/download/v2.0.0/module.zip",
+  "download": "https://github.com/xKillerbees/crlngn-dnd-light/releases/download/v2.0.1/module.zip",
   "readme": "https://github.com/xKillerbees/crlngn-dnd-light#readme",
   "bugs": "https://github.com/xKillerbees/crlngn-dnd-light/issues",
   "license": "https://mit-license.org/",

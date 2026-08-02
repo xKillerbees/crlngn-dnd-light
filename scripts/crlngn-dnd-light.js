@@ -43,9 +43,17 @@ const RECOMMENDED = [
   { mod: CRLNGN, key: "v2-enable-chat-styles", value: false, why: "Dorako themes chat" },
   { mod: CRLNGN, key: "v2-enable-journal-styles", value: false, why: "Dorako themes journals" },
   { mod: CRLNGN, key: "v2-adjust-other-modules", value: false, why: "Dorako handles module support" },
-  { mod: DORAKO, key: "theme.application-theme", value: "dnd5e2-light", why: "D&D light windows" },
-  { mod: DORAKO, key: "theme.interface-theme", value: "dnd5e2-light", why: "D&D light interface" },
+  // Dorako 1.11.3 commented "dnd5e2-light" out of the choices for these two — only
+  // plain "dnd5e2" remains, and it carries no colour scheme of its own
+  // (`if (colorScheme != null)` in its ui-theme.js). Sheets and interface therefore
+  // follow Foundry's own light/dark, which is why forceLightScheme below is
+  // load-bearing rather than cosmetic. Writing "dnd5e2-light" here silently did
+  // nothing and left everything dark.
+  { mod: DORAKO, key: "theme.application-theme", value: "dnd5e2", why: "D&D theme on sheets" },
+  { mod: DORAKO, key: "theme.interface-theme", value: "dnd5e2", why: "D&D theme on interface" },
+  // The chat settings DO still offer the explicit light variant.
   { mod: DORAKO, key: "theme.chat-message-standard-theme", value: "dnd5e2-light", why: "D&D light chat" },
+  { mod: DORAKO, key: "theme.chat-message-opposition-theme", value: "dnd5e2-light", why: "D&D light chat" },
 ];
 
 /** Tracks whether the color scheme has already been forced this session. */
@@ -92,19 +100,29 @@ function applyClasses() {
 }
 
 /**
- * Forces this client's Foundry color scheme to light. `core.uiConfig` is
- * client-scoped, so this only ever changes the local user's preference, and only
- * when it is not already light.
+ * Forces this client's Foundry color scheme to light, and verifies it stuck.
+ *
+ * This is load-bearing, not cosmetic. Dorako's `dnd5e2` theme carries no colour
+ * scheme of its own — its ui-theme.js only sets `data-color-scheme` when the theme
+ * key has an explicit `-light`/`-dark` suffix, and the suffixed variants were
+ * removed from the sheet and interface choices. So the entire light-vs-dark
+ * outcome comes from Foundry's own setting. If this silently fails, everything
+ * renders dark and looks like the theme didn't apply at all.
+ *
+ * `core.uiConfig` is client-scoped, so this only ever changes the local user.
+ *
+ * @returns {Promise<{ok: boolean, changed: boolean, reason?: string}>}
  */
 async function forceLightScheme() {
-  if (schemeForced) return;
-  if (!setting("enabled") || !setting("forceLightScheme")) return;
+  if (!setting("enabled") || !setting("forceLightScheme")) {
+    return { ok: true, changed: false, reason: "disabled by setting" };
+  }
 
   const uiConfig = game.settings.get("core", "uiConfig");
   const scheme = uiConfig?.colorScheme ?? {};
   if (scheme.applications === "light" && scheme.interface === "light") {
     schemeForced = true;
-    return;
+    return { ok: true, changed: false, reason: "already light" };
   }
 
   const updated = foundry.utils.deepClone(uiConfig ?? {});
@@ -112,10 +130,24 @@ async function forceLightScheme() {
 
   try {
     await game.settings.set("core", "uiConfig", updated);
-    schemeForced = true;
   } catch (err) {
     console.error(`${MODULE_ID} | could not set color scheme to light:`, err);
+    return { ok: false, changed: false, reason: err.message };
   }
+
+  // Read back rather than trusting the write. Another module can re-enforce its own
+  // colour scheme over the top, and a silent revert here is indistinguishable from
+  // the theme being broken.
+  const after = game.settings.get("core", "uiConfig")?.colorScheme ?? {};
+  const ok = after.applications === "light" && after.interface === "light";
+  schemeForced = ok;
+  if (!ok) {
+    console.error(
+      `${MODULE_ID} | color scheme did not stick — something reverted it:`,
+      after
+    );
+  }
+  return { ok, changed: true, reason: ok ? undefined : JSON.stringify(after) };
 }
 
 /**
@@ -137,6 +169,17 @@ async function applyRecommendedSetup() {
       continue;
     }
     try {
+      // Validate against the setting's own choices before writing. Foundry does not
+      // reject an out-of-range choice loudly, so a value the target module has since
+      // removed just sits there doing nothing — which is exactly how v2.0.0 shipped
+      // "dnd5e2-light" into a Dorako setting that no longer offers it, leaving the
+      // whole UI dark with no error anywhere.
+      const config = game.settings.settings.get(`${mod}.${key}`);
+      if (config?.choices && !(value in config.choices)) {
+        failed.push(`${key}: "${value}" is not a valid choice (have: ${Object.keys(config.choices).join(", ")})`);
+        continue;
+      }
+
       const current = game.settings.get(mod, key);
       if (current === value) {
         skipped.push(`${key} already ${value}`);
@@ -273,9 +316,18 @@ Hooks.once("ready", async () => {
     );
   }
 
-  await forceLightScheme();
+  const scheme = await forceLightScheme();
   injectStyles();
   applyClasses();
+
+  // Surfaced loudly: with Dorako's dnd5e2 carrying no scheme of its own, a failure
+  // here renders the whole UI dark and reads as "the theme doesn't work".
+  if (!scheme.ok) {
+    ui.notifications.error(
+      game.i18n.format(`${MODULE_ID}.notifications.schemeFailed`, { detail: scheme.reason ?? "" }),
+      { permanent: true }
+    );
+  }
 
   // First launch with both modules present: offer to configure them.
   if (!missing.length && !game.settings.get(MODULE_ID, "setupDone")) {

@@ -23,7 +23,8 @@
       "reloadBody": "Carolingian UI and Dorako UI both apply their themes at load, so a reload is needed for these changes to take full effect."
     },
     "notifications": {
-      "missing": "Dorako UI + Carolingian Bridge needs these modules installed and active: {modules}. The bridge will not do anything until they are."
+      "missing": "Dorako UI + Carolingian Bridge needs these modules installed and active: {modules}. The bridge will not do anything until they are.",
+      "schemeFailed": "Dorako UI + Carolingian Bridge could not set your Foundry colour scheme to light, so everything will render dark. Dorako's dnd5e2 theme follows Foundry's own light/dark setting. Set Configure Settings → Core → Colour Scheme to Light manually. ({detail})"
     }
   }
 }
