@@ -1,0 +1,150 @@
+/**
+ * Carolingian UI — D&D Light: window and sheet treatment
+ *
+ * Everything here is gated behind the `crlngn-dl-parchment` class so the
+ * "Parchment sheets and windows" setting can switch it off and leave the flat
+ * palette from theme.css behind.
+ *
+ * No texture images are shipped. Dorako's dnd5e2 theme layers two .webp textures
+ * plus the dnd5e system's parchment.jpg; neither can be relied on in a PF2e world,
+ * and redistributing them is not this module's business. The grain below is a pair
+ * of very low-contrast radial gradients instead — cheap, self-contained, and close
+ * enough at the opacity the real theme uses.
+ *
+ * Only colour, border, shadow and background properties are touched. Carolingian's
+ * layout is deliberately left alone.
+ */
+
+/* ---------------------------------------- */
+/*  Window frames                           */
+/* ---------------------------------------- */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-parchment {
+  .application,
+  .app.window-app,
+  .application.sheet {
+    --window-app-background: rgb(241, 235, 232);
+    --window-app-border-color: rgb(159, 146, 117);
+    --window-app-border-width: 1px;
+    --window-app-box-shadow: 0 0 30px rgba(25, 24, 19, 0.12), 0 0 6px rgba(25, 24, 19, 0.25);
+    --app-background: rgb(248, 244, 241);
+    --app-border-color: rgb(159, 146, 117);
+    --icon-border-color: rgb(159, 146, 117);
+  }
+
+  /* The grain. Two corner-anchored washes, mirroring where Dorako places its
+     textures, at an opacity that reads as paper rather than as a gradient. */
+  .application.sheet > .window-content,
+  .app.window-app .window-content {
+    background-image:
+      radial-gradient(ellipse 60% 45% at 0% 0%, rgba(159, 146, 117, 0.14), transparent 70%),
+      radial-gradient(ellipse 60% 45% at 100% 100%, rgba(122, 121, 113, 0.12), transparent 70%);
+    background-repeat: no-repeat;
+  }
+
+  /* Gold hairline inside the frame, the detail that makes a 5e sheet read as one. */
+  .application.sheet > .window-header {
+    border-bottom: 1px solid rgba(159, 146, 117, 0.7);
+  }
+}
+
+/* ---------------------------------------- */
+/*  Fieldsets, tabs, buttons                */
+/* ---------------------------------------- */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-parchment {
+  .application fieldset:not(.basics),
+  .app.window-app fieldset:not(.basics) {
+    background: rgb(248, 244, 241);
+    border: 1px solid rgb(159, 146, 117);
+    border-radius: 4px;
+    box-shadow: 0 0 6px rgba(25, 24, 19, 0.12);
+    --color-fieldset-border: rgb(159, 146, 117);
+  }
+
+  .application fieldset:not(.basics) > legend,
+  .app.window-app fieldset:not(.basics) > legend {
+    background: rgb(248, 244, 241);
+    color: rgb(25, 24, 19);
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 2px 6px 0;
+    border-radius: 2px;
+  }
+
+  /* Active sheet tab goes maroon-on-parchment, matching the 5e sheet's tab rail. */
+  .application.sheet nav.sheet-tabs [data-tab].active,
+  .application.sheet nav.tabs [data-tab].active {
+    color: rgb(248, 244, 241);
+    background: rgb(116, 27, 43);
+    border-color: rgb(159, 146, 117);
+  }
+
+  .application.sheet nav.sheet-tabs [data-tab]:not(.active):hover,
+  .application.sheet nav.tabs [data-tab]:not(.active):hover {
+    color: rgb(116, 27, 43);
+    border-color: rgb(159, 146, 117);
+  }
+
+  .application button:not(.control, .plain, [disabled], .disabled),
+  .app.window-app button:not(.control, .plain, [disabled], .disabled) {
+    background: rgb(248, 244, 241);
+    border: 1px solid rgb(159, 146, 117);
+    color: rgb(25, 24, 19);
+    box-shadow: 0 0 6px rgba(25, 24, 19, 0.12);
+  }
+
+  .application button:not(.control, .plain, [disabled], .disabled):hover,
+  .app.window-app button:not(.control, .plain, [disabled], .disabled):hover {
+    background: rgb(116, 27, 43);
+    border-color: rgb(159, 146, 117);
+    color: rgb(248, 244, 241);
+  }
+}
+
+/* ---------------------------------------- */
+/*  PF2e sheet specifics                    */
+/* ---------------------------------------- */
+/*
+ * Carolingian's pf2e-sheets.css maps the system's own --color-pf-* family onto its
+ * teal accent. Remapped here onto maroon/gold. Carolingian declares these from a
+ * 0-6-1 selector (`body.crlngn-ui.crlngn-sheets.system-pf2e .themed:is(.theme-light, .theme-dark):not(.chat-log)`);
+ * the anchor plus `.crlngn-dl-parchment.system-pf2e` and a descendant lands at 0-8-3,
+ * so plain specificity carries it and these stay overridable.
+ */
+
+html.crlngn-dnd-light body.crlngn-ui.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dnd-light.crlngn-dl-parchment.system-pf2e {
+  .app,
+  .application,
+  .themed,
+  .themed.theme-dark,
+  &,
+  .application.compendium-browser {
+    --color-pf-primary: rgb(116, 27, 43);
+    --color-pf-primary-dark: rgb(86, 20, 31);
+    --color-pf-primary-darker: rgb(68, 25, 26);
+    --color-pf-primary-light: rgb(163, 59, 76);
+    --color-pf-primary-lighter: rgb(163, 59, 76);
+
+    --color-pf-secondary: rgb(159, 146, 117);
+    --color-pf-tertiary: rgb(122, 121, 113);
+    --color-pf-tertiary-dark: rgb(75, 74, 68);
+    --color-pf-tertiary-darker: rgb(49, 49, 49);
+    --color-pf-tertiary-light: rgb(201, 199, 184);
+
+    --color-pf-alternate: rgb(75, 74, 68);
+    --color-pf-alternate-light: rgb(122, 121, 113);
+
+    --sidebar-label: rgb(116, 27, 43);
+    --sidebar-title: rgb(116, 27, 43);
+    --color-border-divider: rgba(159, 146, 117, 0.6);
+    --color-border-trait: rgba(159, 146, 117, 0.7);
+    --color-pf-inventory-header-bg: rgba(159, 146, 117, 0.18);
+
+    --primary-background: rgba(159, 146, 117, 0.18);
+    --tertiary: rgba(159, 146, 117, 0.25);
+    --sub: rgba(122, 121, 113, 0.6);
+    --bg-dark: rgba(159, 146, 117, 0.2);
+    --color-border: rgba(159, 146, 117, 0.7);
+  }
+}

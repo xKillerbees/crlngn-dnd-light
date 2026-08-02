@@ -28,7 +28,7 @@ const CRLNGN = "crlngn-ui";
 const DORAKO = "pf2e-dorako-ui";
 
 /** Injected as unlayered <link>s — see the note above. */
-const STYLESHEETS = ["styles/bridge.css"];
+const STYLESHEETS = ["styles/theme.css", "styles/sheets.css", "styles/pf2e-rarity.css"];
 
 /**
  * Settings changed by applyRecommendedSetup.
@@ -39,21 +39,22 @@ const STYLESHEETS = ["styles/bridge.css"];
  * absent: those are the features being kept.
  */
 const RECOMMENDED = [
-  { mod: CRLNGN, key: "v2-apply-theme-and-styles", value: false, why: "Dorako themes sheets" },
-  { mod: CRLNGN, key: "v2-enable-chat-styles", value: false, why: "Dorako themes chat" },
-  { mod: CRLNGN, key: "v2-enable-journal-styles", value: false, why: "Dorako themes journals" },
-  { mod: CRLNGN, key: "v2-adjust-other-modules", value: false, why: "Dorako handles module support" },
-  // Dorako 1.11.3 commented "dnd5e2-light" out of the choices for these two — only
-  // plain "dnd5e2" remains, and it carries no colour scheme of its own
-  // (`if (colorScheme != null)` in its ui-theme.js). Sheets and interface therefore
-  // follow Foundry's own light/dark, which is why forceLightScheme below is
-  // load-bearing rather than cosmetic. Writing "dnd5e2-light" here silently did
-  // nothing and left everything dark.
-  { mod: DORAKO, key: "theme.application-theme", value: "dnd5e2", why: "D&D theme on sheets" },
-  { mod: DORAKO, key: "theme.interface-theme", value: "dnd5e2", why: "D&D theme on interface" },
-  // The chat settings DO still offer the explicit light variant.
-  { mod: DORAKO, key: "theme.chat-message-standard-theme", value: "dnd5e2-light", why: "D&D light chat" },
-  { mod: DORAKO, key: "theme.chat-message-opposition-theme", value: "dnd5e2-light", why: "D&D light chat" },
+  // Carolingian owns the layout, including the character sheets — that is the whole
+  // point of using it. Its styling is switched on, then recoloured by styles/.
+  { mod: CRLNGN, key: "v2-apply-theme-and-styles", value: true, why: "Carolingian sheet layout" },
+  { mod: CRLNGN, key: "v2-enable-chat-styles", value: true, why: "Carolingian chat layout" },
+  { mod: CRLNGN, key: "v2-enable-journal-styles", value: true, why: "Carolingian journal layout" },
+  { mod: CRLNGN, key: "v2-adjust-other-modules", value: true, why: "Carolingian module support" },
+
+  // Dorako is neutralised rather than uninstalled. Its dnd5e2 theme would fight
+  // Carolingian for the same elements, and Carolingian is the one being kept; the
+  // D&D palette is reproduced in styles/theme.css instead. "no-theme" is a valid
+  // choice for all four of these — checked against its theme-settings.js, not
+  // assumed. Skipped entirely when Dorako is not active.
+  { mod: DORAKO, key: "theme.application-theme", value: "no-theme", why: "Carolingian styles sheets" },
+  { mod: DORAKO, key: "theme.interface-theme", value: "no-theme", why: "Carolingian styles the interface" },
+  { mod: DORAKO, key: "theme.chat-message-standard-theme", value: "no-theme", why: "Carolingian styles chat" },
+  { mod: DORAKO, key: "theme.chat-message-opposition-theme", value: "no-theme", why: "Carolingian styles chat" },
 ];
 
 /** Tracks whether the color scheme has already been forced this session. */
@@ -308,29 +309,28 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", async () => {
-  const missing = [CRLNGN, DORAKO].filter((id) => !game.modules.get(id)?.active);
-  if (missing.length) {
+  // Only Carolingian is required. Dorako is optional and, if present, gets switched
+  // to no-theme by the setup so the two stop fighting over the same elements.
+  const crlngnActive = !!game.modules.get(CRLNGN)?.active;
+  if (!crlngnActive) {
     ui.notifications.warn(
-      game.i18n.format(`${MODULE_ID}.notifications.missing`, { modules: missing.join(", ") }),
+      game.i18n.format(`${MODULE_ID}.notifications.missing`, { modules: CRLNGN }),
       { permanent: true }
     );
   }
 
+  // Best-effort now rather than load-bearing: the palette applies under either
+  // colour scheme, so a failure here is cosmetic. Logged, not shouted about.
   const scheme = await forceLightScheme();
+  if (!scheme.ok) {
+    console.warn(`${MODULE_ID} | colour scheme not set to light (${scheme.reason}) — ` +
+                 `harmless, the palette does not depend on it.`);
+  }
+
   injectStyles();
   applyClasses();
 
-  // Surfaced loudly: with Dorako's dnd5e2 carrying no scheme of its own, a failure
-  // here renders the whole UI dark and reads as "the theme doesn't work".
-  if (!scheme.ok) {
-    ui.notifications.error(
-      game.i18n.format(`${MODULE_ID}.notifications.schemeFailed`, { detail: scheme.reason ?? "" }),
-      { permanent: true }
-    );
-  }
-
-  // First launch with both modules present: offer to configure them.
-  if (!missing.length && !game.settings.get(MODULE_ID, "setupDone")) {
+  if (crlngnActive && !game.settings.get(MODULE_ID, "setupDone")) {
     await game.settings.set(MODULE_ID, "setupDone", true);
     await promptRecommendedSetup();
   }

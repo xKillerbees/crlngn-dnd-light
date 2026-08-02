@@ -3,28 +3,27 @@
     "settings": {
       "enabled": {
         "name": "Enable bridge theme",
-        "hint": "Master switch. When off, Carolingian UI's scene navigation and combat tracker revert to their own colours. Dorako UI is unaffected either way."
+        "hint": "Master switch. When off, Carolingian UI reverts to its own colour theme. Nothing else is changed."
       },
       "forceLightScheme": {
         "name": "Force light color scheme",
-        "hint": "Sets this client's Foundry color scheme to light for both applications and interface, to match Dorako's dnd5e2-light theme. Affects only you, and you can change it back in Foundry's own settings."
+        "hint": "Sets this client's Foundry colour scheme to light. Optional — the palette applies under either scheme — but Foundry's own widgets and any unstyled module will look better in light. Affects only you."
       }
     },
     "setup": {
       "menuName": "Recommended setup",
       "menuLabel": "Apply recommended setup",
-      "menuHint": "Configures Carolingian UI and Dorako UI so they stop overlapping: Dorako themes sheets, chat and windows, while Carolingian keeps its scene navigation and combat tracker.",
+      "menuHint": "Switches Carolingian UI's styling on so it owns the layout, and sets PF2e Dorako UI to no-theme if it is installed, so the two stop competing.",
       "title": "Apply recommended setup",
       "intro": "This will change the following settings so the two modules stop competing for the same elements:",
-      "note": "Carolingian's scene navigation and combat tracker settings are left alone — those are the features being kept. Turning off its sheet styling also restores Pathfinder 2e's own item rarity colours.",
+      "note": "Carolingian's scene navigation and combat tracker settings are left alone. Dorako is only touched if it is active — it is not required by this module.",
       "done": "Recommended setup applied. {changed} setting(s) changed, {skipped} already correct.",
       "failed": "{count} setting(s) could not be changed — see the console (F12) for details. World-scoped settings require GM permission.",
       "reloadTitle": "Reload Foundry?",
       "reloadBody": "Carolingian UI and Dorako UI both apply their themes at load, so a reload is needed for these changes to take full effect."
     },
     "notifications": {
-      "missing": "Dorako UI + Carolingian Bridge needs these modules installed and active: {modules}. The bridge will not do anything until they are.",
-      "schemeFailed": "Dorako UI + Carolingian Bridge could not set your Foundry colour scheme to light, so everything will render dark. Dorako's dnd5e2 theme follows Foundry's own light/dark setting. Set Configure Settings → Core → Colour Scheme to Light manually. ({detail})"
+      "missing": "Carolingian UI — D&D Light needs {modules} installed and active. Nothing will be themed until it is."
     }
   }
 }
