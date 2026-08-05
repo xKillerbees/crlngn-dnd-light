@@ -95,14 +95,22 @@ Foundry.
 
 ## Status
 
-**v0.1.0 — first working version.** The frame, rail, portrait column and panel
-treatment are built and verified; the tab contents are the system's own and render
-inside the new frame.
+**v0.3.0 — running in a live world.** Frame, navigation rail, full-height portrait
+column, panel treatment and the bespoke stat tiles are all in place, with the tab
+contents rendering as the system's own inside the new frame.
 
-Verified so far: template contracts, Handlebars and HTML balance, tab/partial parity,
-CSS scoping, and the rendered three-column layout measured in a browser. **Not yet
-opened in a live Foundry world** — expect spot-fixing where the system's inner tables
-meet the dark palette, since those are styled by PF2e rules this only recolours.
+Three things were fixed after first contact with a real world, each worth knowing
+about before editing:
+
+1. **Registration is a hook race.** PF2e calls `registerSheets()` from inside its own
+   `Hooks.once("setup")`, and Foundry evaluates module scripts *before* the system's —
+   so a module's `setup` listener fires first and finds the registry empty.
+   Registration is attempted at `setup` and retried at `ready`.
+2. **The sheet label must be localised at registration.** Foundry does not localise
+   that field, so passing an i18n key put the literal key in the sheet picker.
+3. **`crb-style` is also the frame**, not just partial styling — see the note at the
+   top of `styles/sheet.css`. Left active it placed this template's children into the
+   system's named grid areas and painted parchment behind them.
 
 ### Stat tiles
 
