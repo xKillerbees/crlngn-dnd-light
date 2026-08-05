@@ -39,6 +39,89 @@
 }
 
 /* ---------------------------------------- */
+/*  Neutralising the system's frame         */
+/* ---------------------------------------- */
+/*
+ * `crb-style` is doing two jobs at once, and this sheet only wants one of them.
+ * It carries the styling every tab partial depends on — which is why the template
+ * keeps it — but it is also the frame itself (src/styles/actor/character/_index.scss):
+ *
+ *     .actor.sheet.character section.window-content .crb-style {
+ *         display: grid;
+ *         grid: "sidebar header"  4.625rem
+ *               "sidebar nav"     minmax(min-content, max-content)
+ *               "sidebar content" 1fr
+ *               / 14.375rem 1fr;
+ *         background: url(header.webp), url(background.webp);
+ *         height: 100%;
+ *     }
+ *
+ * Left alone, that grid places this template's restructured children into its own
+ * named areas and paints the parchment behind them — the overlapping panels and the
+ * large blank sheet. So the frame is switched off here while the partial styling is
+ * kept.
+ *
+ * On the class repetition: that system rule is specificity 0-5-1, and its descendant
+ * rules (`… .crb-style aside`) reach 0-5-2. Repeating `.pf2e-styled-sheet` five times
+ * gives 0-6-2, which clears both. It is ugly but deterministic, and the weight stays
+ * confined to this module's own class rather than leaking via `!important`.
+ * The stylesheet is also injected unlayered, which independently beats the system's
+ * layered CSS — belt and braces, since neither alone is worth relying on.
+ */
+
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  section.window-content form.crb-style {
+  display: block;
+  grid: none;
+  grid-template: none;
+  grid-template-areas: none;
+  grid-template-columns: none;
+  grid-template-rows: none;
+  gap: 0;
+  background: none;
+  height: 100%;
+}
+
+/*
+ * The frame children are no longer grid items, so their assigned areas are inert —
+ * but the system also gives `aside` a fixed width and its own background, and the
+ * nav a horizontal strip. Those are reset so the template's own columns govern.
+ */
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-frame > * {
+  grid-area: auto;
+}
+
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style aside {
+  grid-area: auto;
+  width: auto;
+  min-width: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style nav.sheet-navigation {
+  grid-area: auto;
+  position: static;
+  background: none;
+  border: none;
+  margin: 0;
+}
+
+/* The system header partial is built for a 4.625rem banner slot; contain it. */
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-header-panel > header {
+  grid-area: auto;
+  position: static;
+  width: auto;
+  margin: 0;
+}
+
+/* ---------------------------------------- */
 /*  Window shell                            */
 /* ---------------------------------------- */
 
