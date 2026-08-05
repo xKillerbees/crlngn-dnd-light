@@ -63,6 +63,38 @@ function getSystemCharacterSheet() {
   return entry?.cls ?? null;
 }
 
+/**
+ * Reads a module setting, tolerating being called before registration completes.
+ * @param {string} key
+ * @param {unknown} fallback
+ */
+function getSetting(key, fallback) {
+  try {
+    return game.settings.get(MODULE_ID, key) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Registered in `init` so the value is available to `registerSheet` during `setup`.
+ *
+ * `makeDefault` is consumed at registration time, so it cannot take effect until the
+ * next load — hence `requiresReload`. Without it the setting appears to do nothing,
+ * which is a worse experience than being told to reload.
+ */
+function registerSettings() {
+  game.settings.register(MODULE_ID, "makeDefault", {
+    name: "PF2E_STYLED_SHEET.settings.makeDefault.name",
+    hint: "PF2E_STYLED_SHEET.settings.makeDefault.hint",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+}
+
 /** Builds and registers the sheet. Deferred to `setup`, once PF2e has registered its own. */
 function registerSheet() {
   const SystemSheet = getSystemCharacterSheet();
@@ -111,16 +143,40 @@ function registerSheet() {
   }
 
   const Actors = foundry.documents?.collections?.Actors ?? globalThis.Actors;
-  Actors.registerSheet(MODULE_ID, StyledCharacterSheetPF2e, {
-    types: ["character"],
-    makeDefault: false,
-    label: "PF2E_STYLED_SHEET.sheetName",
-  });
+  if (typeof Actors?.registerSheet !== "function") {
+    console.error(`${MODULE_ID} | Actors.registerSheet is unavailable — not registering.`, Actors);
+    return;
+  }
 
-  console.log(`${MODULE_ID} | registered as ${SHEET_ID}`);
+  const makeDefault = getSetting("makeDefault", false);
+
+  try {
+    Actors.registerSheet(MODULE_ID, StyledCharacterSheetPF2e, {
+      types: ["character"],
+      makeDefault,
+      // Localised here rather than passed as a key. Foundry does not localise this
+      // label, so passing the raw key made the sheet show up in the picker as
+      // "PF2E_STYLED_SHEET.sheetName" — present, but not obviously the right entry.
+      label: game.i18n.localize("PF2E_STYLED_SHEET.sheetName"),
+    });
+  } catch (err) {
+    console.error(`${MODULE_ID} | sheet registration threw:`, err);
+    return;
+  }
+
+  const registered = !!CONFIG.Actor.sheetClasses?.character?.[SHEET_ID];
+  console.log(
+    `${MODULE_ID} | registered=${registered} as "${SHEET_ID}" | makeDefault=${makeDefault}\n` +
+      (makeDefault
+        ? `${MODULE_ID} | it is the default character sheet; actors with an explicit ` +
+          `sheet override still need switching individually.`
+        : `${MODULE_ID} | not the default — pick it per actor from the sheet's ⚙ Sheet ` +
+          `button, or enable "Use as default character sheet" in this module's settings.`)
+  );
 }
 
 Hooks.once("init", () => {
+  registerSettings();
   injectStyles();
 });
 

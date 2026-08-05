@@ -1,5 +1,11 @@
 {
   "PF2E_STYLED_SHEET": {
-    "sheetName": "PF2e Styled Character Sheet"
+    "sheetName": "PF2e Styled Character Sheet",
+    "settings": {
+      "makeDefault": {
+        "name": "Use as default character sheet",
+        "hint": "Makes this the default sheet for all player characters. Actors that already have a sheet explicitly set keep that one — switch those individually from the sheet's Sheet button. Takes effect after a reload."
+      }
+    }
   }
 }
