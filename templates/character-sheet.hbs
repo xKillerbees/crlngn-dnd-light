@@ -105,13 +105,89 @@
                 {{> (resolvePath "templates/actors/character/partials/header.hbs")}}
             </div>
 
-            <div class="pss-content-split">
-                <div class="pss-panel pss-sidebar-panel">
-                    <div class="sidebar" data-tab="sidebar">
-                        {{> (resolvePath "templates/actors/character/partials/sidebar.hbs")}}
+            {{!--
+                Bespoke stat tiles. This is the only markup in the sheet not inherited
+                from the system, and it replaces the system sidebar rather than sitting
+                alongside it — the reference puts these values in boxed tiles across the
+                top of the right column, and keeping both would duplicate every number.
+
+                The rollable tiles carry the system's own `data-action` and
+                `data-statistic` attributes, copied from its sidebar.hbs, so the handlers
+                inherited from CharacterSheetPF2e fire exactly as they do natively.
+                Clicking perception, a save or initiative rolls it; changing an HP field
+                submits through the normal form path. Values are read with the same
+                expressions the system's partials use, so they cannot drift.
+
+                The immunity/weakness/resistance controls are kept because they lived in
+                the sidebar and have nowhere else to go.
+            --}}
+            <div class="pss-panel pss-stats">
+                <div class="pss-tiles pss-tiles-primary">
+                    <div class="pss-tile">
+                        <b>{{data.attributes.ac.value}}</b><span>{{localize "PF2E.ArmorClassShortLabel"}}</span>
+                    </div>
+                    <a class="pss-tile pss-tile-roll" data-action="roll-check" data-statistic="perception"
+                       data-tooltip="PF2E.Check.Specific.Perception.Label">
+                        <b>{{numberFormat data.perception.value decimals=0 sign=true}}</b>
+                        <span>{{localize "PF2E.PerceptionLabel"}}</span>
+                    </a>
+                    <div class="pss-tile">
+                        <b>{{pss.speed}}</b><span>{{localize "PF2E.SpeedLabel"}}</span>
+                    </div>
+                    <a class="pss-tile pss-tile-roll" data-action="roll-initiative"
+                       data-tooltip="COMBAT.InitiativeRoll">
+                        <b>{{numberFormat data.initiative.totalModifier decimals=0 sign=true}}</b>
+                        <span>{{localize "PF2E.InitiativeLabel"}}</span>
+                    </a>
+                </div>
+
+                <div class="pss-tiles pss-tiles-abilities">
+                    {{#each data.abilities as |attribute slug|}}
+                        <div class="pss-tile pss-tile-ability">
+                            <b>{{numberFormat attribute.mod decimals=0 sign=true}}</b>
+                            <span>{{slug}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+
+                <div class="pss-hp">
+                    <div class="pss-hp-bar"><span style="width: {{pss.hpPct}}%"></span></div>
+                    <div class="pss-hp-fields">
+                        <label>{{localize "PF2E.HitPointsHeader"}}</label>
+                        <input type="text" name="system.attributes.hp.value"
+                               value="{{data.attributes.hp.value}}" data-dtype="Number" data-allow-delta />
+                        <span class="pss-hp-sep">/</span>
+                        <span class="pss-hp-max">{{data.attributes.hp.max}}</span>
+                        <label class="pss-hp-temp-label">{{localize "PF2E.HitPointsTemporary"}}</label>
+                        <input type="text" name="system.attributes.hp.temp" placeholder="0"
+                               value="{{data.attributes.hp.temp}}" data-dtype="Number" data-allow-delta data-min="0" />
                     </div>
                 </div>
 
+                <div class="pss-tiles pss-tiles-saves">
+                    {{#each data.saves as |save slug|}}
+                        <a class="pss-tile pss-tile-roll pss-tile-save"
+                           data-action="roll-check" data-statistic="{{save.slug}}">
+                            <b>{{numberFormat save.totalModifier decimals=0 sign=true}}</b>
+                            <span>{{localize save.label}}</span>
+                            <em class="pf-rank" data-rank="{{save.rank}}">{{lookup @root.numberToRank save.rank}}</em>
+                        </a>
+                    {{/each}}
+                    {{#if pss.classDC}}
+                        <div class="pss-tile pss-tile-save">
+                            <b>{{pss.classDC}}</b><span>{{localize "PF2E.ClassDCLabel"}}</span>
+                        </div>
+                    {{/if}}
+                </div>
+
+                <div class="pss-defenses">
+                    <a data-action="edit-immunities"><i class="fa-solid fa-shield"></i>{{localize "PF2E.ImmunitiesLabel"}}</a>
+                    <a data-action="edit-weaknesses"><i class="fa-solid fa-heart-crack"></i>{{localize "PF2E.WeaknessesLabel"}}</a>
+                    <a data-action="edit-resistances"><i class="fa-solid fa-shield-halved"></i>{{localize "PF2E.ResistancesLabel"}}</a>
+                </div>
+            </div>
+
+            <div class="pss-content-split">
                 <section class="sheet-body pss-panel pss-body">
                     <section class="sheet-content">
                         {{> (resolvePath "templates/actors/character/tabs/character.hbs")}}

@@ -151,12 +151,24 @@ function registerSheet(phase) {
     async getData(options) {
       const data = await super.getData(options);
       const actor = this.actor;
+      const hp = actor.system?.attributes?.hp ?? {};
+
       data.pss = {
         level: actor.system?.details?.level?.value ?? 1,
         className: actor.class?.name ?? "",
         ancestryName: actor.ancestry?.name ?? "",
         heritageName: actor.heritage?.name ?? "",
         portrait: actor.img,
+
+        // Only values the system's own context does not already expose in a form the
+        // template can use directly. Everything else the tiles render — ac, abilities,
+        // saves, perception, initiative — is read straight from PF2e's context using
+        // the same expressions its own partials use, so it cannot drift out of sync.
+        speed: actor.system?.attributes?.speed?.total ?? actor.system?.attributes?.speed?.value ?? 0,
+        classDC: actor.classDC?.value ?? null,
+        // Percentage for the HP bar's width. Clamped because temporary overheal and
+        // a zero max both produce values that break the bar.
+        hpPct: Math.max(0, Math.min(100, hp.max ? Math.round((hp.value / hp.max) * 100) : 0)),
       };
       return data;
     }

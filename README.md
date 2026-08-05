@@ -104,12 +104,34 @@ CSS scoping, and the rendered three-column layout measured in a browser. **Not y
 opened in a live Foundry world** — expect spot-fixing where the system's inner tables
 meet the dark palette, since those are styled by PF2e rules this only recolours.
 
+### Stat tiles
+
+The tiles across the top of the right column are the only markup in this sheet not
+inherited from the system. They replace PF2e's sidebar rather than sitting beside it,
+because the reference puts these values in boxes and keeping both would duplicate
+every number.
+
+They stay functional by carrying the system's own hooks, copied from its
+`sidebar.hbs`: `data-action="roll-check"` with `data-statistic` for perception and
+each save, `data-action="roll-initiative"`, and the immunity/weakness/resistance
+editors. The handlers inherited from `CharacterSheetPF2e` fire exactly as they do
+natively. HP fields are plain named inputs, so they submit through the normal form
+path.
+
+Values are read with the same expressions the system's own partials use
+(`data.attributes.ac.value`, `data.abilities`, `data.saves`, `data.perception.value`,
+`data.initiative.totalModifier`) rather than re-derived, so they cannot drift. Only
+speed, class DC and the HP bar percentage are computed in `getData`, under a `pss`
+namespace that cannot collide with the system's context.
+
+**If you add a tile, copy its hook from the system's `sidebar.hbs`.** A tile without
+the right `data-action` renders fine and silently does nothing when clicked.
+
 Known to still need work:
 
-- The system `header.hbs` strip is included as-is; the screenshot's AC / Perception /
-  Speed / Initiative row would need its own markup to match exactly.
 - Inner tab tables are recoloured by variable only, so anything PF2e hardcodes will
   still read light-on-light or dark-on-dark until it's found and overridden.
+- Dying/wounded pips and the XP bar are still only in the system header strip.
 - No compact/narrow layout beyond the 900px container query.
 
 Built against PF2e 8.4.0, Foundry v14.

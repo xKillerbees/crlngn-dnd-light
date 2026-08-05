@@ -173,20 +173,157 @@
   min-height: 0;
 }
 
-/*
- * The right column splits into stats and tab content. The system's sidebar is a
- * vertical stack of sections (hit points, armour class, perception, saves), so it
- * keeps a column of its own rather than being forced into a horizontal strip —
- * re-laying it out would mean fighting the system's markup, which is what makes
- * custom sheets break on updates.
- */
+/* The tab content now spans the full width — the stats moved into tiles above it. */
 .pf2e-styled-sheet .pss-content-split {
   display: grid;
-  grid-template-columns: 236px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   flex: 1 1 auto;
   min-height: 0;
 }
+
+/* ---------------------------------------- */
+/*  Stat tiles                              */
+/* ---------------------------------------- */
+
+.pf2e-styled-sheet .pss-stats {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+
+.pf2e-styled-sheet .pss-tiles {
+  display: grid;
+  gap: 6px;
+}
+
+.pf2e-styled-sheet .pss-tiles-primary { grid-template-columns: repeat(4, 1fr); }
+.pf2e-styled-sheet .pss-tiles-abilities { grid-template-columns: repeat(6, 1fr); }
+.pf2e-styled-sheet .pss-tiles-saves { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+
+.pf2e-styled-sheet .pss-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 7px 4px;
+  background: linear-gradient(180deg, var(--pss-raised) 0%, var(--pss-panel) 100%);
+  border: 1px solid rgba(138, 109, 59, 0.45);
+  border-radius: 2px;
+  text-decoration: none;
+}
+
+.pf2e-styled-sheet .pss-tile > b {
+  font-family: var(--pss-serif);
+  font-size: 1.35rem;
+  line-height: 1.05;
+  color: var(--pss-text);
+  font-weight: normal;
+}
+
+.pf2e-styled-sheet .pss-tile > span {
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pss-text-dim);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Only the tiles that actually roll get affordances — the rest must not look clickable. */
+.pf2e-styled-sheet a.pss-tile-roll { cursor: pointer; }
+
+.pf2e-styled-sheet a.pss-tile-roll:hover {
+  border-color: var(--pss-gold);
+  box-shadow: 0 0 10px rgba(201, 162, 39, 0.28);
+}
+
+.pf2e-styled-sheet a.pss-tile-roll:hover > b { color: var(--pss-gold); }
+
+.pf2e-styled-sheet .pss-tile-ability > span { color: var(--pss-gold-soft); }
+
+.pf2e-styled-sheet .pss-tile-save > .pf-rank {
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-style: normal;
+  color: var(--pss-bronze);
+  margin-top: 1px;
+}
+
+/* ---------------------------------------- */
+/*  Hit points                              */
+/* ---------------------------------------- */
+
+.pf2e-styled-sheet .pss-hp-bar {
+  height: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(138, 109, 59, 0.45);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pf2e-styled-sheet .pss-hp-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(180deg, var(--pss-blood-bright), var(--pss-blood));
+  transition: width 200ms ease;
+}
+
+.pf2e-styled-sheet .pss-hp-fields {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pss-text-dim);
+}
+
+.pf2e-styled-sheet .pss-hp-fields input {
+  width: 3.4rem;
+  text-align: center;
+  font-family: var(--pss-serif);
+  font-size: 0.95rem;
+}
+
+.pf2e-styled-sheet .pss-hp-max {
+  font-family: var(--pss-serif);
+  font-size: 0.95rem;
+  color: var(--pss-text);
+}
+
+.pf2e-styled-sheet .pss-hp-temp-label { margin-left: auto; }
+
+/* ---------------------------------------- */
+/*  Defence editors                         */
+/* ---------------------------------------- */
+
+.pf2e-styled-sheet .pss-defenses {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.pf2e-styled-sheet .pss-defenses > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pss-text-dim);
+  cursor: pointer;
+}
+
+.pf2e-styled-sheet .pss-defenses > a:hover { color: var(--pss-gold); }
+.pf2e-styled-sheet .pss-defenses > a > i { color: var(--pss-bronze); }
 
 .pf2e-styled-sheet .pss-col {
   display: flex;
@@ -431,12 +568,6 @@
   color: var(--pss-gold-soft);
 }
 
-.pf2e-styled-sheet .pss-sidebar-panel {
-  flex: 0 1 auto;
-  overflow-y: auto;
-  padding: 10px;
-  min-height: 0;
-}
 
 /* ---------------------------------------- */
 /*  Right — header strip and body           */
@@ -509,9 +640,7 @@
 .pf2e-styled-sheet .pss-body h1,
 .pf2e-styled-sheet .pss-body h2,
 .pf2e-styled-sheet .pss-body h3,
-.pf2e-styled-sheet .pss-body .sidebar-title,
-.pf2e-styled-sheet .pss-sidebar-panel h2,
-.pf2e-styled-sheet .pss-sidebar-panel h3 {
+.pf2e-styled-sheet .pss-body .sidebar-title {
   font-family: var(--pss-serif);
   letter-spacing: 0.1em;
   text-transform: uppercase;
