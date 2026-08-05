@@ -1,132 +1,129 @@
-# Carolingian UI — D&D Light (PF2e)
+# PF2e Styled Character Sheet
 
-Keeps [Carolingian UI](https://github.com/crlngn/crlngn-ui)'s layout — character sheets,
-scene navigation, combat carousel — and recolours all of it in the D&D 5e-style light
-theme from [PF2e Dorako UI](https://github.com/Dorako/pf2e-Dorako-UI): parchment, gold
-borders, maroon accents, dark text. Also restores Pathfinder 2e's item rarity colours,
-which Carolingian flattens out.
+An alternate Pathfinder 2e character sheet: a portrait as the centre column, an icon
+rail for navigation, and a dark gilded frame with ornate corner bracketing.
 
-Carolingian keeps its layout. This module only changes colours.
-
-**The palette applies under either Foundry colour scheme.** It does not depend on
-`core.uiConfig` being set to light — see the notes below, because that assumption is what
-broke every earlier version.
+**Every roll, strike, spell, feat and inventory action behaves exactly as it does on
+the system sheet.** This is a reskin of the frame, not a reimplementation.
 
 ## Install
 
 Foundry → *Add-on Modules* → *Install Module* → **Manifest URL**:
 
 ```
-https://raw.githubusercontent.com/xKillerbees/crlngn-dnd-light/refs/heads/main/module.json
+https://raw.githubusercontent.com/xKillerbees/pf2e-styled-character-sheet/refs/heads/main/module.json
 ```
 
-Requires `crlngn-ui`. **Dorako UI is optional** — if it's installed the setup switches it
-to `no-theme` so it stops competing; if it isn't installed nothing is lost, since the D&D
-palette is reproduced here rather than borrowed at runtime.
+Then pick it per actor, or make it the default:
 
-On first launch it offers to apply the recommended setup. You can re-run it any time from
-*Configure Settings → Carolingian UI — D&D Light → Apply recommended setup*.
+- **One actor:** open the sheet → the ⚙ *Sheet* button in the window header →
+  *PF2e Styled Character Sheet*.
+- **Everyone:** *Game Settings → Configure Settings → Sheet Configuration* → set the
+  default `character` sheet.
 
-## What the setup changes
+It registers alongside the system sheet rather than replacing it, so you can switch
+back per-actor at any time.
 
-| module | setting | to | why |
-|---|---|---|---|
-| crlngn-ui | `v2-apply-theme-and-styles` | **on** | Carolingian's sheet layout |
-| crlngn-ui | `v2-enable-chat-styles` | **on** | Carolingian's chat layout |
-| crlngn-ui | `v2-enable-journal-styles` | **on** | Carolingian's journal layout |
-| crlngn-ui | `v2-adjust-other-modules` | **on** | Carolingian's module support |
-| pf2e-dorako-ui *(if active)* | all four `theme.*` settings | `no-theme` | stops it fighting Carolingian |
+## How it works
 
-Carolingian's combat tracker and scene navigation settings are left alone. Every value is
-validated against the target setting's own choices before being written, and each write is
-attempted independently — so a world-scoped setting refused for a non-GM, or a key removed
-upstream, reports instead of silently doing nothing.
+The design decision that makes this maintainable: it **subclasses the system's own
+`CharacterSheetPF2e`** and overrides exactly one thing — `get template()`. Every
+behaviour is inherited untouched, and the replacement template re-includes PF2e's own
+tab partials verbatim:
 
-## Settings
+```hbs
+{{> (resolvePath "templates/actors/character/tabs/inventory.hbs")}}
+```
 
-| setting | default | |
-|---|---|---|
-| Enable D&D Light theme | on | Master switch. Off = Carolingian reverts to its own colour theme. |
-| Force light color scheme | on | Sets *your* Foundry colour scheme to light. Optional — the palette works either way — but Foundry's own widgets look better in light. Client-scoped. |
+So the inventory tab *is* PF2e's inventory tab. When the system adds a feature or
+fixes a bug in a tab, this sheet gets it for free.
 
-## Notes for anyone editing this
+This is possible because PF2e 8.x still builds on ApplicationV1 —
+`ActorSheetPF2e extends fav1.sheets.ActorSheet` — where the template is a single
+overridable getter. A from-scratch sheet would mean reimplementing thousands of lines
+of strike, spellcasting and crafting logic, and silently losing a feature every time
+one was missed.
 
-Four things that are not obvious, each of which caused a shipped bug.
+### Contracts that must not be broken
 
-**Styles are injected as `<link>`s from `scripts/`, not declared in `module.json`.**
-Foundry v13+ assigns manifest-declared styles to a CSS cascade layer, and unlayered rules
-beat layered ones *ahead of specificity*. Carolingian is unlayered on both counts — its
-manifest ships `"styles": []` and it appends its own `<link>` from JS, plus a runtime
-`<style>` from its colour picker. A manifest-declared stylesheet therefore loses every
-contested rule no matter how specific it is. In v1.0.x only the `!important` rules and the
-uncontested ones survived, which looked exactly like the module not loading.
+If you edit `templates/character-sheet.hbs`, three things are load-bearing:
 
-**No selector mentions a colour scheme.** Gating the palette behind `.theme-light` made it
-depend on `core.uiConfig`, which does not hold — the user can change it, another module can
-re-enforce its own, and Foundry does not stamp a scheme class on every element anyway.
-Three separate rounds of "still dark" traced here. This is unconditionally a light theme,
-so the selectors say so. Verified in the harness with the page in `theme-dark`, in
-`theme-light`, and with no scheme class at all: identical computed values.
+| | why |
+|---|---|
+| `crb-style` on the `<form>` | the system's partials are styled through it |
+| `nav.sheet-navigation` + `.sheet-content` | the tab controller is configured with exactly those selectors (`sheet.ts` → `defaultOptions.tabs`) |
+| `data-tab` values | must match the tab partials' own names |
 
-**Never source a colour through a variable Carolingian reassigns.** It sets
-`--dnd5e-color-maroon: var(--color-highlights)` inside `body.crlngn-ui`. An earlier build
-read Dorako's palette from there and created a cycle — `--cdl-maroon` →
-`--dnd5e-color-maroon` → `--color-highlights` → `--cdl-maroon`. CSS resolves cycles by
-invalidating every property involved, so the whole maroon family computed to *nothing*
-while gold worked fine, because Carolingian doesn't touch gold. The palette is now
-hardcoded, which also means Dorako isn't required at runtime.
+`limited`-permission actors deliberately fall through to the system's own limited
+sheet. That view is intentionally reduced, and reimplementing it risks showing data
+the sheet shouldn't.
 
-**Target module setting keys are not what their menus display.** Carolingian's are
-`v2-`-prefixed kebab-case (`v2-apply-theme-and-styles`, not `applyThemeToSheets`). Dorako
-1.11.3 commented `dnd5e2-light` out of the choices for `theme.application-theme` and
-`theme.interface-theme`. Foundry does not reject an out-of-range choice loudly — it just
-sits there doing nothing — so `applyRecommendedSetup` validates against
-`game.settings.settings.get(...).choices` before writing.
+### Styling
 
-The repeated `.crlngn-dnd-light` in selectors is deliberate: the anchor is 0-6-2, which
-clears Carolingian's deepest PF2e selectors at 0-6-1. A single occurrence gives 0-3-2 and
-loses on class count — verified, sheets kept Carolingian's lilac `--color-secondary` until
-the anchor was raised. It went from three repetitions to four when the scheme class was
-dropped, to pay back the specificity that removal cost.
+`styles/sheet.css` is scoped entirely under `.pf2e-styled-sheet`, the class added in
+`defaultOptions`. Selecting the system sheet on another actor leaves it untouched;
+nothing here is global.
 
-Only the rarity and proficiency custom properties use `!important`. Everything else relies
-on specificity and stays overridable from Carolingian's own **Custom CSS** box.
+It's injected as an unlayered `<link>` from `scripts/module.js` rather than declared
+in `module.json`. Foundry v13+ puts manifest-declared styles in a CSS cascade layer,
+and unlayered rules beat layered ones *ahead of specificity* — this has to override
+the system's own sheet CSS, which applies throughout because the template reuses
+PF2e's partials.
 
-## Tweaking colours
+Inside the tab partials, only **variable overrides** are used wherever the system
+exposes one. Prefer adding a variable override over writing a rule against PF2e's
+internal markup — the latter is what makes custom sheets rot across releases.
 
-Source colours are declared once at the top of `styles/theme.css` as `--cdl-*`. For a
-different accent, change `rgb(116, 27, 43)` (maroon) and `rgb(159, 146, 117)` (gold)
-throughout that file. `hotReload` is declared for `.css`, so edits apply without
-restarting Foundry.
+The corner brackets are eight background gradients rather than pseudo-elements:
+`::before`/`::after` only give two corners, the panels need four, and both pseudos
+stay free for content. The whole motif scales from `--pss-bracket`.
+
+## Palette
+
+Change these at the top of `styles/sheet.css`:
+
+| variable | |
+|---|---|
+| `--pss-gold` `#c9a227` | active nav, headings, level numeral |
+| `--pss-gold-soft` `#b08d4f` | corner brackets, borders |
+| `--pss-panel` `#14100d` | panel fill |
+| `--pss-blood` `#7c1f1f` | HP bar |
+| `--pss-serif` | display face; falls back through Trajan / Palatino / Georgia |
+
+`hotReload` is declared for `.css` and `.hbs`, so edits apply without restarting
+Foundry.
 
 ## Status
 
-Verified in a browser harness that loads Carolingian's real stylesheets and asserts
-computed values, including reproductions of Foundry's cascade-layer behaviour and
-Carolingian's runtime colour-picker `<style>` carrying a custom accent. The harness uses an
-approximation of the sheet and interface DOM rather than a running Foundry, so expect
-spot-fixing in less common corners.
+**v0.1.0 — first working version.** The frame, rail, portrait column and panel
+treatment are built and verified; the tab contents are the system's own and render
+inside the new frame.
 
-Tested against Carolingian UI 4.0.1, Dorako UI 1.11.3, Foundry v13–v14, PF2e 7.x–8.x.
+Verified so far: template contracts, Handlebars and HTML balance, tab/partial parity,
+CSS scoping, and the rendered three-column layout measured in a browser. **Not yet
+opened in a live Foundry world** — expect spot-fixing where the system's inner tables
+meet the dark palette, since those are styled by PF2e rules this only recolours.
+
+Known to still need work:
+
+- The system `header.hbs` strip is included as-is; the screenshot's AC / Perception /
+  Speed / Initiative row would need its own markup to match exactly.
+- Inner tab tables are recoloured by variable only, so anything PF2e hardcodes will
+  still read light-on-light or dark-on-dark until it's found and overridden.
+- No compact/narrow layout beyond the 900px container query.
+
+Built against PF2e 8.4.0, Foundry v14.
 
 ## Layout
 
 ```
-crlngn-dnd-light/
+pf2e-styled-character-sheet/
 ├── module.json
-├── scripts/crlngn-dnd-light.js   style injection, setup helper, settings
-├── styles/theme.css              palette translation
-├── styles/sheets.css             parchment windows, gold borders, maroon tabs
-├── styles/pf2e-rarity.css        rarity + proficiency restoration
+├── scripts/module.js                 sheet subclass, registration, style injection
+├── templates/character-sheet.hbs     the frame; content is PF2e's own partials
+├── styles/sheet.css                  dark gilded treatment, scoped to the sheet
 └── lang/en.json
 ```
 
-Carolingian UI is MIT. Dorako UI's colour values are reproduced as plain hex; no code or
-assets from either module are redistributed here.
-
-### History
-
-v2.x tried the opposite arrangement — Dorako primary, Carolingian reduced to scene nav and
-combat tracker. That gave up Carolingian's character sheets, which were the reason for
-using it. v3 returns to Carolingian owning the layout, with the cascade-layer, colour-scheme
-and variable-cycle bugs that sank v1.x now fixed.
+MIT. No system code or assets are redistributed; PF2e's partials are referenced at
+runtime, not copied.

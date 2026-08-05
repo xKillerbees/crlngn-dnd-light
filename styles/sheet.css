@@ -1,0 +1,440 @@
+/**
+ * PF2e Styled Character Sheet
+ *
+ * Scoped entirely under `.pf2e-styled-sheet` (the app class added in
+ * defaultOptions), so selecting the system sheet on another actor leaves it
+ * completely untouched. Nothing here is global.
+ *
+ * Injected as an unlayered <link> from scripts/module.js rather than declared in
+ * module.json. Foundry v13+ puts manifest-declared styles in a CSS cascade layer,
+ * and unlayered rules beat layered ones ahead of specificity — this has to override
+ * the system's own sheet CSS, which applies throughout because the template reuses
+ * PF2e's partials.
+ *
+ * Deliberately restrained about what it restyles. The frame, panels, rail and
+ * portrait are ours; inside the tab partials only colour and border are touched, and
+ * layout is left to the system. Re-laying-out PF2e's inner tables would break on
+ * every system release and is what makes custom sheets rot.
+ */
+
+.pf2e-styled-sheet {
+  /* Palette */
+  --pss-black: #0b0908;
+  --pss-panel: #14100d;
+  --pss-panel-2: #1b1613;
+  --pss-raised: #241d18;
+  --pss-gold: #c9a227;
+  --pss-gold-soft: #b08d4f;
+  --pss-gold-dim: #6b5426;
+  --pss-bronze: #8a6d3b;
+  --pss-text: #e8dcc4;
+  --pss-text-dim: #a89474;
+  --pss-blood: #7c1f1f;
+  --pss-blood-bright: #c0392b;
+
+  --pss-bracket: 13px;
+  --pss-hair: 1px;
+
+  --pss-serif: "Modesto Condensed", "Trajan Pro", "Palatino Linotype", Palatino, Georgia, serif;
+}
+
+/* ---------------------------------------- */
+/*  Window shell                            */
+/* ---------------------------------------- */
+
+.pf2e-styled-sheet .window-content {
+  padding: 0;
+  background: radial-gradient(ellipse at 50% 0%, #1a1512 0%, var(--pss-black) 70%);
+  color: var(--pss-text);
+  overflow: hidden;
+  /* Establishes the query container the layout rules at the bottom size against.
+     A media query would measure the viewport; this sheet is resized by its window. */
+  container: pss-sheet / inline-size;
+}
+
+.pf2e-styled-sheet form.pss-sheet {
+  height: 100%;
+  overflow: hidden;
+}
+
+.pf2e-styled-sheet .pss-frame {
+  display: grid;
+  grid-template-columns: 234px minmax(260px, 0.95fr) minmax(400px, 1.45fr);
+  gap: 10px;
+  padding: 10px;
+  height: 100%;
+  min-height: 0;
+}
+
+.pf2e-styled-sheet .pss-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+/* ---------------------------------------- */
+/*  Panels and corner brackets              */
+/* ---------------------------------------- */
+/*
+ * The brackets are eight gradients rather than pseudo-elements: ::before and ::after
+ * only give two corners, and the panels need all four while keeping both pseudos
+ * free for content. Each corner is one horizontal and one vertical bar, sized by
+ * --pss-bracket, so the whole motif scales from one variable.
+ */
+
+.pf2e-styled-sheet .pss-panel {
+  position: relative;
+  background: linear-gradient(180deg, var(--pss-panel-2) 0%, var(--pss-panel) 100%);
+  border: var(--pss-hair) solid rgba(138, 109, 59, 0.35);
+  border-radius: 2px;
+  min-height: 0;
+
+  background-image:
+    linear-gradient(180deg, var(--pss-panel-2) 0%, var(--pss-panel) 100%),
+    linear-gradient(var(--pss-gold-soft), var(--pss-gold-soft)),
+    linear-gradient(var(--pss-gold-soft), var(--pss-gold-soft)),
+    linear-gradient(var(--pss-gold-soft), var(--pss-gold-soft)),
+    linear-gradient(var(--pss-gold-soft), var(--pss-gold-soft)),
+    linear-gradient(var(--pss-gold-soft), var(--pss-gold-soft)),
+    linear-gradient(var(--pss-gold-soft), var(--pss-gold-soft)),
+    linear-gradient(var(--pss-gold-soft), var(--pss-gold-soft)),
+    linear-gradient(var(--pss-gold-soft), var(--pss-gold-soft));
+  background-repeat: no-repeat;
+  background-size:
+    100% 100%,
+    var(--pss-bracket) 2px, 2px var(--pss-bracket),
+    var(--pss-bracket) 2px, 2px var(--pss-bracket),
+    var(--pss-bracket) 2px, 2px var(--pss-bracket),
+    var(--pss-bracket) 2px, 2px var(--pss-bracket);
+  background-position:
+    0 0,
+    4px 4px, 4px 4px,
+    calc(100% - 4px) 4px, calc(100% - 4px) 4px,
+    4px calc(100% - 4px), 4px calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) calc(100% - 4px);
+}
+
+/* ---------------------------------------- */
+/*  Left rail — identity                    */
+/* ---------------------------------------- */
+
+.pf2e-styled-sheet .pss-identity {
+  flex: 0 0 auto;
+  padding: 18px 14px 14px;
+  text-align: center;
+}
+
+.pf2e-styled-sheet .pss-level {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 10px;
+  rotate: 45deg;
+  border: 1px solid var(--pss-gold-soft);
+  background: linear-gradient(135deg, var(--pss-raised), var(--pss-panel));
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 12px rgba(201, 162, 39, 0.18);
+}
+
+.pf2e-styled-sheet .pss-level > span {
+  rotate: -45deg;
+  font-family: var(--pss-serif);
+  font-size: 1.35rem;
+  color: var(--pss-gold);
+  line-height: 1;
+}
+
+.pf2e-styled-sheet .pss-identity-name {
+  font-family: var(--pss-serif);
+  font-size: 1.05rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pss-text);
+  margin: 0 0 4px;
+  border: none;
+  line-height: 1.25;
+}
+
+.pf2e-styled-sheet .pss-identity-class {
+  font-family: var(--pss-serif);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  color: var(--pss-gold-soft);
+}
+
+.pf2e-styled-sheet .pss-identity-ancestry {
+  font-style: italic;
+  font-size: 0.75rem;
+  color: var(--pss-text-dim);
+}
+
+/* ---------------------------------------- */
+/*  Left rail — navigation                  */
+/* ---------------------------------------- */
+
+.pf2e-styled-sheet nav.pss-nav {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 6px;
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--pss-panel-2) 0%, var(--pss-panel) 100%);
+  border: var(--pss-hair) solid rgba(138, 109, 59, 0.3);
+  border-radius: 2px;
+  /* The system's nav rules assume a horizontal strip; this one is a vertical rail. */
+  height: auto;
+  min-height: 0;
+}
+
+.pf2e-styled-sheet nav.pss-nav > a.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  color: var(--pss-text-dim);
+  font-family: var(--pss-serif);
+  font-size: 0.8rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease;
+}
+
+.pf2e-styled-sheet nav.pss-nav > a.item > i {
+  color: var(--pss-bronze);
+  font-size: 0.9rem;
+  transition: color 120ms ease;
+}
+
+.pf2e-styled-sheet nav.pss-nav > a.item:hover {
+  color: var(--pss-text);
+  background: rgba(201, 162, 39, 0.07);
+  border-color: rgba(201, 162, 39, 0.25);
+}
+
+.pf2e-styled-sheet nav.pss-nav > a.item:hover > i {
+  color: var(--pss-gold-soft);
+}
+
+.pf2e-styled-sheet nav.pss-nav > a.item.active {
+  color: #f3e7cd;
+  background: linear-gradient(90deg, rgba(201, 162, 39, 0.22), rgba(201, 162, 39, 0.04));
+  border-color: var(--pss-gold-soft);
+}
+
+.pf2e-styled-sheet nav.pss-nav > a.item.active > i {
+  color: var(--pss-gold);
+}
+
+.pf2e-styled-sheet nav.pss-nav > a.item.hidden {
+  display: none;
+}
+
+.pf2e-styled-sheet .pss-rail-footer {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  padding: 4px;
+}
+
+.pf2e-styled-sheet .pss-rail-footer .manage-tabs {
+  color: var(--pss-bronze);
+  padding: 4px 10px;
+}
+
+.pf2e-styled-sheet .pss-rail-footer .manage-tabs:hover {
+  color: var(--pss-gold);
+}
+
+/* ---------------------------------------- */
+/*  Centre — portrait                       */
+/* ---------------------------------------- */
+
+.pf2e-styled-sheet .pss-portrait-panel {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  overflow: hidden;
+  padding: 10px;
+  min-height: 220px;
+}
+
+.pf2e-styled-sheet .pss-portrait {
+  position: absolute;
+  inset: 6px;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  object-fit: cover;
+  object-position: top center;
+  border: none;
+  border-radius: 0;
+  /* Fades the portrait into the panel so the nameplate reads over it. */
+  mask-image: linear-gradient(to bottom, black 55%, transparent 97%);
+  cursor: pointer;
+}
+
+.pf2e-styled-sheet .pss-nameplate {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding-bottom: 6px;
+  text-shadow: 0 2px 6px #000, 0 0 18px #000;
+}
+
+.pf2e-styled-sheet .pss-nameplate h1 {
+  font-family: var(--pss-serif);
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f5ead2;
+  margin: 0;
+  border: none;
+  line-height: 1.15;
+}
+
+.pf2e-styled-sheet .pss-nameplate p {
+  margin: 2px 0 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pss-gold-soft);
+}
+
+.pf2e-styled-sheet .pss-sidebar-panel {
+  flex: 0 1 auto;
+  overflow-y: auto;
+  padding: 10px;
+  min-height: 0;
+}
+
+/* ---------------------------------------- */
+/*  Right — header strip and body           */
+/* ---------------------------------------- */
+
+.pf2e-styled-sheet .pss-header-panel {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+}
+
+.pf2e-styled-sheet .pss-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 10px;
+}
+
+.pf2e-styled-sheet .pss-body .sheet-content {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ---------------------------------------- */
+/*  Recolouring the system's partials       */
+/* ---------------------------------------- */
+/*
+ * Variable overrides only, wherever the system exposes one. This is the part most
+ * likely to need extending as gaps show up on real sheets — prefer adding a variable
+ * override here over writing a rule against the system's internal markup, which is
+ * what breaks on updates.
+ */
+
+.pf2e-styled-sheet form.pss-sheet {
+  --color-text-dark-primary: var(--pss-text);
+  --color-text-dark-secondary: var(--pss-text-dim);
+  --color-text-light-primary: var(--pss-text);
+  --color-text-trait: var(--pss-text);
+
+  --color-pf-primary: var(--pss-gold-soft);
+  --color-pf-primary-dark: var(--pss-gold-dim);
+  --color-pf-primary-darker: var(--pss-gold-dim);
+  --color-pf-primary-light: var(--pss-gold);
+  --color-pf-primary-lighter: var(--pss-gold);
+  --color-pf-secondary: var(--pss-bronze);
+  --color-pf-alternate: var(--pss-text-dim);
+  --color-pf-alternate-light: var(--pss-text-dim);
+
+  --color-border-divider: rgba(138, 109, 59, 0.35);
+  --color-border-light-tertiary: rgba(138, 109, 59, 0.3);
+  --color-border-trait: rgba(138, 109, 59, 0.45);
+  --color-bg-trait: rgba(124, 31, 31, 0.55);
+
+  --sidebar-label: var(--pss-gold-soft);
+  --sidebar-title: var(--pss-gold);
+  --primary-background: rgba(201, 162, 39, 0.1);
+  --tertiary: rgba(201, 162, 39, 0.16);
+  --sub: rgba(168, 148, 116, 0.5);
+  --bg-dark: rgba(0, 0, 0, 0.35);
+
+  --color-pf-health-bg: var(--pss-blood);
+  --color-pf-health-temp-bg: #2f5d7c;
+
+  --input-background-color: rgba(0, 0, 0, 0.35);
+  --input-border-color: rgba(138, 109, 59, 0.4);
+  --input-text-color: var(--pss-text);
+}
+
+/* Section headings inside the tabs, given the gilded treatment. */
+.pf2e-styled-sheet .pss-body h1,
+.pf2e-styled-sheet .pss-body h2,
+.pf2e-styled-sheet .pss-body h3,
+.pf2e-styled-sheet .pss-body .sidebar-title,
+.pf2e-styled-sheet .pss-sidebar-panel h2,
+.pf2e-styled-sheet .pss-sidebar-panel h3 {
+  font-family: var(--pss-serif);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pss-gold);
+  border-color: rgba(138, 109, 59, 0.4);
+}
+
+/* Inputs and selects, so the system's fields sit in the dark frame. */
+.pf2e-styled-sheet form.pss-sheet input:not([type="checkbox"]):not([type="radio"]),
+.pf2e-styled-sheet form.pss-sheet select,
+.pf2e-styled-sheet form.pss-sheet textarea {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(138, 109, 59, 0.35);
+  color: var(--pss-text);
+}
+
+.pf2e-styled-sheet form.pss-sheet input:focus,
+.pf2e-styled-sheet form.pss-sheet select:focus,
+.pf2e-styled-sheet form.pss-sheet textarea:focus {
+  outline: 1px solid var(--pss-gold-soft);
+  box-shadow: 0 0 8px rgba(201, 162, 39, 0.25);
+}
+
+/* Scrollbars, warm rather than default grey. */
+.pf2e-styled-sheet ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+.pf2e-styled-sheet ::-webkit-scrollbar-thumb {
+  background: var(--pss-gold-dim);
+  border-radius: 2px;
+}
+.pf2e-styled-sheet ::-webkit-scrollbar-thumb:hover { background: var(--pss-gold-soft); }
+
+/* ---------------------------------------- */
+/*  Narrow windows                          */
+/* ---------------------------------------- */
+/*
+ * Below ~900px the three columns stop fitting. The portrait column is the one that
+ * degrades most gracefully, so it folds under the content rather than being dropped.
+ */
+
+@container pss-sheet (max-width: 900px) {
+  .pf2e-styled-sheet .pss-frame {
+    grid-template-columns: 200px 1fr;
+  }
+  .pf2e-styled-sheet .pss-col-portrait {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    flex-direction: row;
+  }
+  .pf2e-styled-sheet .pss-portrait-panel { min-height: 180px; }
+}

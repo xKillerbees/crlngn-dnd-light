@@ -1,29 +1,5 @@
 {
-  "crlngn-dnd-light": {
-    "settings": {
-      "enabled": {
-        "name": "Enable bridge theme",
-        "hint": "Master switch. When off, Carolingian UI reverts to its own colour theme. Nothing else is changed."
-      },
-      "forceLightScheme": {
-        "name": "Force light color scheme",
-        "hint": "Sets this client's Foundry colour scheme to light. Optional — the palette applies under either scheme — but Foundry's own widgets and any unstyled module will look better in light. Affects only you."
-      }
-    },
-    "setup": {
-      "menuName": "Recommended setup",
-      "menuLabel": "Apply recommended setup",
-      "menuHint": "Switches Carolingian UI's styling on so it owns the layout, and sets PF2e Dorako UI to no-theme if it is installed, so the two stop competing.",
-      "title": "Apply recommended setup",
-      "intro": "This will change the following settings so the two modules stop competing for the same elements:",
-      "note": "Carolingian's scene navigation and combat tracker settings are left alone. Dorako is only touched if it is active — it is not required by this module.",
-      "done": "Recommended setup applied. {changed} setting(s) changed, {skipped} already correct.",
-      "failed": "{count} setting(s) could not be changed — see the console (F12) for details. World-scoped settings require GM permission.",
-      "reloadTitle": "Reload Foundry?",
-      "reloadBody": "Carolingian UI and Dorako UI both apply their themes at load, so a reload is needed for these changes to take full effect."
-    },
-    "notifications": {
-      "missing": "Carolingian UI — D&D Light needs {modules} installed and active. Nothing will be themed until it is."
-    }
+  "PF2E_STYLED_SHEET": {
+    "sheetName": "PF2e Styled Character Sheet"
   }
 }

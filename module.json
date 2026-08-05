@@ -1,8 +1,8 @@
 {
-  "id": "crlngn-dnd-light",
-  "title": "Carolingian UI — D&D Light (PF2e)",
-  "description": "Recolours Carolingian UI in the D&D 5e-style light theme from PF2e Dorako UI, keeping Carolingian's character sheets, scene navigation and combat carousel. Also restores Pathfinder 2e's item rarity colours. Applies under either Foundry colour scheme.",
-  "version": "3.0.0",
+  "id": "pf2e-styled-character-sheet",
+  "title": "PF2e Styled Character Sheet",
+  "description": "An alternate Pathfinder 2e character sheet with a dark, gilded layout: a portrait as the centre column, an icon rail for navigation, and ornate framing. Subclasses the system's own sheet, so every roll, strike, spell and inventory action behaves exactly as it does natively.",
+  "version": "0.1.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14"
@@ -13,11 +13,11 @@
       "url": "https://github.com/xKillerbees"
     }
   ],
-  "url": "https://github.com/xKillerbees/crlngn-dnd-light",
-  "manifest": "https://raw.githubusercontent.com/xKillerbees/crlngn-dnd-light/refs/heads/main/module.json",
-  "download": "https://github.com/xKillerbees/crlngn-dnd-light/releases/download/v3.0.0/module.zip",
-  "readme": "https://github.com/xKillerbees/crlngn-dnd-light#readme",
-  "bugs": "https://github.com/xKillerbees/crlngn-dnd-light/issues",
+  "url": "https://github.com/xKillerbees/pf2e-styled-character-sheet",
+  "manifest": "https://raw.githubusercontent.com/xKillerbees/pf2e-styled-character-sheet/refs/heads/main/module.json",
+  "download": "https://github.com/xKillerbees/pf2e-styled-character-sheet/releases/download/v0.1.0/module.zip",
+  "readme": "https://github.com/xKillerbees/pf2e-styled-character-sheet#readme",
+  "bugs": "https://github.com/xKillerbees/pf2e-styled-character-sheet/issues",
   "license": "https://mit-license.org/",
   "relationships": {
     "systems": [
@@ -25,25 +25,16 @@
         "id": "pf2e",
         "type": "system",
         "compatibility": {
-          "minimum": "7.0.0"
-        }
-      }
-    ],
-    "requires": [
-      {
-        "id": "crlngn-ui",
-        "type": "module",
-        "manifest": "https://github.com/crlngn/crlngn-ui/releases/latest/download/module.json",
-        "compatibility": {
-          "minimum": "4.0.0"
+          "minimum": "7.0.0",
+          "verified": "8.4.0"
         }
       }
     ]
   },
-  "styles": [],
   "esmodules": [
-    "scripts/crlngn-dnd-light.js"
+    "scripts/module.js"
   ],
+  "styles": [],
   "languages": [
     {
       "lang": "en",
@@ -55,6 +46,7 @@
     "hotReload": {
       "extensions": [
         ".css",
+        ".hbs",
         ".json"
       ]
     }

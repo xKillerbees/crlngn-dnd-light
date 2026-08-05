@@ -1,0 +1,127 @@
+{{!--
+    PF2e Styled Character Sheet — frame
+
+    This replaces the system's sheet.hbs frame only. Every content panel is the
+    system's own partial, included verbatim, so the tabs keep all their behaviour and
+    stay current with the system automatically.
+
+    Three contracts must be preserved or the sheet stops working:
+      1. `crb-style` on the form — the system's partials are styled through it.
+      2. `nav.sheet-navigation` and `.sheet-content` — the tab controller is configured
+         with exactly those selectors (see the system's sheet.ts defaultOptions).
+      3. `data-tab` values must match the partials' own tab names.
+
+    `tabVisibility` and `resolvePath` come from the system's context and helpers.
+--}}
+<form class="{{cssClass}} crb-style pss-sheet{{#if isProficiencyLocked}} proficiency-lock{{/if}}"
+      data-tooltip-class="pf2e" autocomplete="off">
+
+    <div class="pss-frame">
+
+        {{!-- LEFT: identity and navigation rail --}}
+        <aside class="pss-col pss-col-rail">
+            <div class="pss-panel pss-identity">
+                <div class="pss-level" aria-label="{{localize "PF2E.LevelLabel"}}">
+                    <span>{{pss.level}}</span>
+                </div>
+                <h2 class="pss-identity-name">{{actor.name}}</h2>
+                {{#if pss.className}}<div class="pss-identity-class">{{pss.className}}</div>{{/if}}
+                {{#if pss.ancestryName}}<div class="pss-identity-ancestry">{{pss.ancestryName}}</div>{{/if}}
+            </div>
+
+            <nav class="sheet-navigation pss-nav" data-group="primary" role="tablist">
+                <a class="item{{#unless tabVisibility.character}} hidden{{/unless}}" data-tab="character"
+                   role="tab" aria-selected="true" aria-label="{{localize "PF2E.TabCharacterLabel"}}">
+                    <i class="fa-solid fa-fw fa-address-card"></i><span>{{localize "PF2E.TabCharacterLabel"}}</span>
+                </a>
+                <a class="item{{#unless tabVisibility.proficiencies}} hidden{{/unless}}" data-tab="proficiencies"
+                   role="tab" aria-label="{{localize "PF2E.TabSkillsLabel"}}">
+                    <i class="fa-solid fa-fw fa-bullseye"></i><span>{{localize "PF2E.TabSkillsLabel"}}</span>
+                </a>
+                <a class="item{{#unless tabVisibility.actions}} hidden{{/unless}}" data-tab="actions"
+                   role="tab" aria-label="{{localize "PF2E.TabActionsLabel"}}">
+                    <i class="fa-solid fa-fw fa-hand-fist"></i><span>{{localize "PF2E.TabActionsLabel"}}</span>
+                </a>
+                <a class="item{{#unless tabVisibility.inventory}} hidden{{/unless}}" data-tab="inventory"
+                   role="tab" aria-label="{{localize "PF2E.TabInventoryLabel"}}">
+                    <i class="fa-solid fa-fw fa-box-open"></i><span>{{localize "PF2E.TabInventoryLabel"}}</span>
+                </a>
+                <a class="item{{#unless tabVisibility.spellcasting}} hidden{{/unless}}" data-tab="spellcasting"
+                   role="tab" aria-label="{{localize "PF2E.TabSpellbookLabel"}}">
+                    <i class="fa-solid fa-fw fa-wand-sparkles"></i><span>{{localize "PF2E.TabSpellbookLabel"}}</span>
+                </a>
+                <a class="item{{#unless tabVisibility.crafting}} hidden{{/unless}}" data-tab="crafting"
+                   role="tab" aria-label="{{localize "PF2E.TabCraftingLabel"}}">
+                    <i class="fa-solid fa-fw fa-hammer"></i><span>{{localize "PF2E.TabCraftingLabel"}}</span>
+                </a>
+                <a class="item{{#unless tabVisibility.feats}} hidden{{/unless}}" data-tab="feats"
+                   role="tab" aria-label="{{localize "PF2E.Item.Feat.Plural"}}">
+                    <i class="fa-solid fa-fw fa-medal"></i><span>{{localize "PF2E.Item.Feat.Plural"}}</span>
+                </a>
+                <a class="item{{#unless tabVisibility.biography}} hidden{{/unless}}" data-tab="biography"
+                   role="tab" aria-label="{{localize "PF2E.Biography"}}">
+                    <i class="fa-solid fa-fw fa-book-open"></i><span>{{localize "PF2E.Biography"}}</span>
+                </a>
+                <a class="item{{#unless tabVisibility.effects}} hidden{{/unless}}" data-tab="effects"
+                   role="tab" aria-label="{{localize "PF2E.Item.Effect.Plural"}}">
+                    <i class="fa-solid fa-fw fa-skull"></i><span>{{localize "PF2E.Item.Effect.Plural"}}</span>
+                </a>
+                <a class="item{{#unless tabVisibility.pfs}} hidden{{/unless}}" data-tab="pfs"
+                   role="tab" aria-label="{{localize "PF2E.TabPathfinderSociety"}}">
+                    <i class="fa-solid fa-fw fa-id-badge"></i><span>{{localize "PF2E.TabPathfinderSociety"}}</span>
+                </a>
+            </nav>
+
+            <div class="pss-rail-footer">
+                <a class="manage-tabs" data-action="manage-tabs"
+                   data-tooltip="PF2E.TabManageTabsLabel" aria-label="{{localize "PF2E.TabManageTabsLabel"}}">
+                    <i class="fa-solid fa-fw fa-ellipsis-v"></i>
+                </a>
+            </div>
+        </aside>
+
+        {{!-- CENTRE: portrait, with the system's sidebar (AC, HP, saves) beneath it --}}
+        <section class="pss-col pss-col-portrait">
+            <div class="pss-panel pss-portrait-panel">
+                <img class="pss-portrait" src="{{pss.portrait}}" alt="{{actor.name}}"
+                     data-edit="img" data-action="edit-image" />
+                <div class="pss-nameplate">
+                    <h1>{{actor.name}}</h1>
+                    <p>
+                        {{#if pss.ancestryName}}{{pss.ancestryName}} {{/if}}{{pss.className}}
+                        &middot; {{localize "PF2E.LevelLabel"}} {{pss.level}}
+                    </p>
+                </div>
+            </div>
+
+            <div class="pss-panel pss-sidebar-panel">
+                <div class="sidebar" data-tab="sidebar">
+                    {{> (resolvePath "templates/actors/character/partials/sidebar.hbs")}}
+                </div>
+            </div>
+        </section>
+
+        {{!-- RIGHT: system header strip, then the tab content --}}
+        <section class="pss-col pss-col-content">
+            <div class="pss-panel pss-header-panel">
+                {{> (resolvePath "templates/actors/character/partials/header.hbs")}}
+            </div>
+
+            <section class="sheet-body pss-panel pss-body">
+                <section class="sheet-content">
+                    {{> (resolvePath "templates/actors/character/tabs/character.hbs")}}
+                    {{> (resolvePath "templates/actors/character/tabs/actions.hbs")}}
+                    {{> (resolvePath "templates/actors/character/tabs/inventory.hbs")}}
+                    {{> (resolvePath "templates/actors/character/tabs/spellcasting.hbs")}}
+                    {{> (resolvePath "templates/actors/character/tabs/crafting.hbs")}}
+                    {{> (resolvePath "templates/actors/character/tabs/proficiencies.hbs")}}
+                    {{> (resolvePath "templates/actors/character/tabs/feats.hbs")}}
+                    {{> (resolvePath "templates/actors/character/tabs/effects.hbs")}}
+                    {{> (resolvePath "templates/actors/character/tabs/biography.hbs")}}
+                    {{> (resolvePath "templates/actors/character/tabs/pfs.hbs")}}
+                </section>
+            </section>
+        </section>
+
+    </div>
+</form>
