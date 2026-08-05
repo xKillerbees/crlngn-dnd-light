@@ -112,6 +112,28 @@
   margin: 0;
 }
 
+/*
+ * The reset above strips the nav's background so the system's horizontal strip stops
+ * showing — but it is more specific than the `.pss-nav` styling further down, so it
+ * was flattening this rail too and leaving the items floating with no panel. Restated
+ * here at matching weight. Any styling for our own nav has to live at this
+ * specificity, not in the ordinary section below.
+ */
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style nav.sheet-navigation.pss-nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 2px;
+  padding: 8px 6px;
+  background: linear-gradient(180deg, var(--pss-panel-2) 0%, var(--pss-panel) 100%);
+  border: var(--pss-hair) solid rgba(138, 109, 59, 0.3);
+  border-radius: 2px;
+  overflow-y: auto;
+  height: auto;
+}
+
 /* The system header partial is built for a 4.625rem banner slot; contain it. */
 .pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
   form.crb-style .pss-header-panel > header {
@@ -142,10 +164,27 @@
 
 .pf2e-styled-sheet .pss-frame {
   display: grid;
-  grid-template-columns: 234px minmax(260px, 0.95fr) minmax(400px, 1.45fr);
+  /* Portrait column is fixed rather than fractional: it holds one image, and letting
+     it flex made the image shrink on narrower windows, which is the whole look. */
+  grid-template-columns: 218px 300px minmax(420px, 1fr);
   gap: 10px;
   padding: 10px;
   height: 100%;
+  min-height: 0;
+}
+
+/*
+ * The right column splits into stats and tab content. The system's sidebar is a
+ * vertical stack of sections (hit points, armour class, perception, saves), so it
+ * keeps a column of its own rather than being forced into a horizontal strip —
+ * re-laying it out would mean fighting the system's markup, which is what makes
+ * custom sheets break on updates.
+ */
+.pf2e-styled-sheet .pss-content-split {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  gap: 10px;
+  flex: 1 1 auto;
   min-height: 0;
 }
 
@@ -338,6 +377,7 @@
 /*  Centre — portrait                       */
 /* ---------------------------------------- */
 
+/* Fills the column top to bottom — the single change that most affects the look. */
 .pf2e-styled-sheet .pss-portrait-panel {
   flex: 1 1 auto;
   display: flex;
@@ -346,7 +386,8 @@
   align-items: center;
   overflow: hidden;
   padding: 10px;
-  min-height: 220px;
+  min-height: 0;
+  height: 100%;
 }
 
 .pf2e-styled-sheet .pss-portrait {

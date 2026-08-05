@@ -80,7 +80,11 @@
             </div>
         </aside>
 
-        {{!-- CENTRE: portrait, with the system's sidebar (AC, HP, saves) beneath it --}}
+        {{!-- CENTRE: the portrait, and nothing else.
+              It fills the column top to bottom, which is what makes the layout read
+              the way it does in the reference. The system sidebar used to sit here
+              and squeezed the image into a strip; it now lives beside the tab
+              content on the right, where the reference keeps its stats. --}}
         <section class="pss-col pss-col-portrait">
             <div class="pss-panel pss-portrait-panel">
                 <img class="pss-portrait" src="{{pss.portrait}}" alt="{{actor.name}}"
@@ -93,34 +97,36 @@
                     </p>
                 </div>
             </div>
-
-            <div class="pss-panel pss-sidebar-panel">
-                <div class="sidebar" data-tab="sidebar">
-                    {{> (resolvePath "templates/actors/character/partials/sidebar.hbs")}}
-                </div>
-            </div>
         </section>
 
-        {{!-- RIGHT: system header strip, then the tab content --}}
+        {{!-- RIGHT: header strip across the top, then stats beside the tab content --}}
         <section class="pss-col pss-col-content">
             <div class="pss-panel pss-header-panel">
                 {{> (resolvePath "templates/actors/character/partials/header.hbs")}}
             </div>
 
-            <section class="sheet-body pss-panel pss-body">
-                <section class="sheet-content">
-                    {{> (resolvePath "templates/actors/character/tabs/character.hbs")}}
-                    {{> (resolvePath "templates/actors/character/tabs/actions.hbs")}}
-                    {{> (resolvePath "templates/actors/character/tabs/inventory.hbs")}}
-                    {{> (resolvePath "templates/actors/character/tabs/spellcasting.hbs")}}
-                    {{> (resolvePath "templates/actors/character/tabs/crafting.hbs")}}
-                    {{> (resolvePath "templates/actors/character/tabs/proficiencies.hbs")}}
-                    {{> (resolvePath "templates/actors/character/tabs/feats.hbs")}}
-                    {{> (resolvePath "templates/actors/character/tabs/effects.hbs")}}
-                    {{> (resolvePath "templates/actors/character/tabs/biography.hbs")}}
-                    {{> (resolvePath "templates/actors/character/tabs/pfs.hbs")}}
+            <div class="pss-content-split">
+                <div class="pss-panel pss-sidebar-panel">
+                    <div class="sidebar" data-tab="sidebar">
+                        {{> (resolvePath "templates/actors/character/partials/sidebar.hbs")}}
+                    </div>
+                </div>
+
+                <section class="sheet-body pss-panel pss-body">
+                    <section class="sheet-content">
+                        {{> (resolvePath "templates/actors/character/tabs/character.hbs")}}
+                        {{> (resolvePath "templates/actors/character/tabs/actions.hbs")}}
+                        {{> (resolvePath "templates/actors/character/tabs/inventory.hbs")}}
+                        {{> (resolvePath "templates/actors/character/tabs/spellcasting.hbs")}}
+                        {{> (resolvePath "templates/actors/character/tabs/crafting.hbs")}}
+                        {{> (resolvePath "templates/actors/character/tabs/proficiencies.hbs")}}
+                        {{> (resolvePath "templates/actors/character/tabs/feats.hbs")}}
+                        {{> (resolvePath "templates/actors/character/tabs/effects.hbs")}}
+                        {{> (resolvePath "templates/actors/character/tabs/biography.hbs")}}
+                        {{> (resolvePath "templates/actors/character/tabs/pfs.hbs")}}
+                    </section>
                 </section>
-            </section>
+            </div>
         </section>
 
     </div>
