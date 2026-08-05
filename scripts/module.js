@@ -95,11 +95,31 @@ function registerSettings() {
   });
 }
 
-/** Builds and registers the sheet. Deferred to `setup`, once PF2e has registered its own. */
-function registerSheet() {
+/** Set once registration succeeds, so the retry below is a no-op afterwards. */
+let sheetRegistered = false;
+
+/**
+ * Builds and registers the sheet, if PF2e's own is available yet.
+ *
+ * Called from both `setup` and `ready` because the timing is a race that cannot be
+ * won by picking one hook. PF2e calls `registerSheets()` from inside its own
+ * `Hooks.once("setup")` (scripts/hooks/setup.ts), and Foundry evaluates module
+ * scripts before the system's — so a module's `setup` listener is attached first and
+ * therefore fires first, finding the sheet registry still empty. Registering only on
+ * `ready` would work today, but would break the moment that load order changed.
+ * Trying at `setup` and again at `ready` is correct under either ordering.
+ *
+ * @param {"setup"|"ready"} phase
+ */
+function registerSheet(phase) {
+  if (sheetRegistered) return;
+
   const SystemSheet = getSystemCharacterSheet();
   if (!SystemSheet) {
-    console.error(`${MODULE_ID} | could not find PF2e's character sheet class — not registering.`);
+    // Not an error at `setup` — it's the expected state when we win the race.
+    console.debug(
+      `${MODULE_ID} | PF2e's character sheet is not registered yet (phase: ${phase}); will retry.`
+    );
     return;
   }
 
@@ -164,9 +184,10 @@ function registerSheet() {
     return;
   }
 
-  const registered = !!CONFIG.Actor.sheetClasses?.character?.[SHEET_ID];
+  sheetRegistered = !!CONFIG.Actor.sheetClasses?.character?.[SHEET_ID];
   console.log(
-    `${MODULE_ID} | registered=${registered} as "${SHEET_ID}" | makeDefault=${makeDefault}\n` +
+    `${MODULE_ID} | registered=${sheetRegistered} as "${SHEET_ID}" ` +
+      `(phase: ${phase}, makeDefault: ${makeDefault})\n` +
       (makeDefault
         ? `${MODULE_ID} | it is the default character sheet; actors with an explicit ` +
           `sheet override still need switching individually.`
@@ -180,16 +201,32 @@ Hooks.once("init", () => {
   injectStyles();
 });
 
-// setup, not init: PF2e registers its own sheets during init, and reading the
-// registry before that has happened would find nothing.
+// Attempted twice on purpose — see the note on registerSheet(). PF2e registers its
+// own sheets from inside its `setup` listener, and module scripts are evaluated
+// before the system's, so a module `setup` listener fires first and finds nothing.
 Hooks.once("setup", () => {
   if (game.system.id !== "pf2e") {
     console.warn(`${MODULE_ID} | requires the PF2e system; not registering.`);
     return;
   }
-  registerSheet();
+  registerSheet("setup");
 });
 
 Hooks.once("ready", () => {
+  if (game.system.id === "pf2e") {
+    registerSheet("ready");
+    if (!sheetRegistered) {
+      // Genuinely wrong by this point: PF2e has finished setting up and its sheet
+      // still is not in the registry.
+      console.error(
+        `${MODULE_ID} | could not find PF2e's character sheet class in ` +
+          `CONFIG.Actor.sheetClasses.character. Registered keys: ` +
+          `${Object.keys(CONFIG.Actor?.sheetClasses?.character ?? {}).join(", ") || "(none)"}`
+      );
+      ui.notifications?.error(game.i18n.localize("PF2E_STYLED_SHEET.notifications.registerFailed"), {
+        permanent: true,
+      });
+    }
+  }
   injectStyles();
 });

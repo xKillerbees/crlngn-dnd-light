@@ -6,6 +6,9 @@
         "name": "Use as default character sheet",
         "hint": "Makes this the default sheet for all player characters. Actors that already have a sheet explicitly set keep that one — switch those individually from the sheet's Sheet button. Takes effect after a reload."
       }
+    },
+    "notifications": {
+      "registerFailed": "PF2e Styled Character Sheet could not attach to the system's character sheet. See the console (F12) for the list of sheet classes it did find."
     }
   }
 }
