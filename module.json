@@ -2,7 +2,7 @@
   "id": "pf2e-styled-character-sheet",
   "title": "PF2e Styled Character Sheet",
   "description": "An alternate Pathfinder 2e character sheet with a dark, gilded layout: a portrait as the centre column, an icon rail for navigation, and ornate framing. Subclasses the system's own sheet, so every roll, strike, spell and inventory action behaves exactly as it does natively.",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14"
@@ -15,7 +15,7 @@
   ],
   "url": "https://github.com/xKillerbees/pf2e-styled-character-sheet",
   "manifest": "https://raw.githubusercontent.com/xKillerbees/pf2e-styled-character-sheet/refs/heads/main/module.json",
-  "download": "https://github.com/xKillerbees/pf2e-styled-character-sheet/releases/download/v0.3.1/module.zip",
+  "download": "https://github.com/xKillerbees/pf2e-styled-character-sheet/releases/download/v0.4.0/module.zip",
   "readme": "https://github.com/xKillerbees/pf2e-styled-character-sheet#readme",
   "bugs": "https://github.com/xKillerbees/pf2e-styled-character-sheet/issues",
   "license": "https://mit-license.org/",

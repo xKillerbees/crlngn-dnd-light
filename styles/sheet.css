@@ -134,6 +134,31 @@
   height: auto;
 }
 
+/*
+ * The system renders each nav entry as a fixed 24px circular badge
+ * (src/styles/actor/_nav.scss):
+ *
+ *     .item { width: 1.5rem; height: 1.5rem; border-radius: 50%;
+ *             background-image: url(nav-item-inactive.webp);
+ *             box-shadow: 0 0 0 1px …, 0 0 0 2px #9f725b, …; }
+ *
+ * This rail uses labelled rows instead, so the text overflowed a 24px box — the
+ * clipped first letters and missing icons — and the box-shadow rings showed as stray
+ * outlines around each entry. Every one of those properties has to be unset; styling
+ * the row without clearing them leaves the badge underneath.
+ */
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style nav.sheet-navigation.pss-nav > a.item {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  border-radius: 2px;
+  background-image: none;
+  box-shadow: none;
+  fill: currentColor;
+  overflow: visible;
+}
+
 /* The system header partial is built for a 4.625rem banner slot; contain it. */
 .pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
   form.crb-style .pss-header-panel > header {
@@ -641,6 +666,78 @@
   --input-background-color: rgba(0, 0, 0, 0.35);
   --input-border-color: rgba(138, 109, 59, 0.4);
   --input-text-color: var(--pss-text);
+
+  /*
+   * The system's semantic text and surface variables, from its _colors.scss. These
+   * are the ones that made body text read as unreadable grey: `--text-dark` is a
+   * *dark* colour intended for the system's light parchment, and `--bg` / `--bg-dark`
+   * are near-white surfaces. On this theme every one of them has to invert. This is
+   * the set worth checking first whenever something is illegible.
+   */
+  --text-dark: var(--pss-text);
+  --text-light: var(--pss-text);
+  --text-light-disabled: var(--pss-text-dim);
+  --color-text-dark-input: var(--pss-text);
+  --color-text-subtle: var(--pss-text-dim);
+  --color-disabled: var(--pss-text-dim);
+  --sub: var(--pss-text-dim);
+  --alt: var(--pss-text-dim);
+  --alt-dark: var(--pss-bronze);
+  --bg: var(--pss-panel);
+  --bg-dark: rgba(0, 0, 0, 0.35);
+  --tag-color: var(--pss-text);
+
+  --color-border-divider: rgba(138, 109, 59, 0.35);
+  --color-border-dark-input: rgba(138, 109, 59, 0.4);
+  --color-border-medium: rgba(138, 109, 59, 0.4);
+
+  /* Visibility pills are near-white by default and glare against the panels. */
+  --visibility-gm-bg: rgba(90, 90, 130, 0.35);
+  --visibility-owner-bg: rgba(90, 130, 100, 0.35);
+
+  /* Success/failure text: the system's pure blue and red are unreadable on black. */
+  --color-pf-text-critical-success: #56c271;
+  --color-pf-text-success: #6f9ede;
+  --color-pf-text-failure: #e08a4a;
+  --color-pf-text-critical-failure: #e05c5c;
+}
+
+/* ---------------------------------------- */
+/*  Sub-navigation strips                    */
+/* ---------------------------------------- */
+/*
+ * The Encounter / Exploration / Downtime bar and the spell-collection tabs are
+ * separate tab controllers from the main rail (see the system's defaultOptions:
+ * `nav.actions-nav` and `nav[data-group=spell-collections]`). They ship as light
+ * strips and glared white against the dark panels.
+ */
+
+.pf2e-styled-sheet .pss-body nav.actions-nav,
+.pf2e-styled-sheet .pss-body nav[data-group="spell-collections"] {
+  background: linear-gradient(180deg, var(--pss-raised) 0%, var(--pss-panel) 100%);
+  border: 1px solid rgba(138, 109, 59, 0.4);
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+.pf2e-styled-sheet .pss-body nav.actions-nav > a,
+.pf2e-styled-sheet .pss-body nav[data-group="spell-collections"] > a {
+  color: var(--pss-text-dim);
+  font-family: var(--pss-serif);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+.pf2e-styled-sheet .pss-body nav.actions-nav > a:hover,
+.pf2e-styled-sheet .pss-body nav[data-group="spell-collections"] > a:hover {
+  color: var(--pss-text);
+}
+
+.pf2e-styled-sheet .pss-body nav.actions-nav > a.active,
+.pf2e-styled-sheet .pss-body nav[data-group="spell-collections"] > a.active {
+  color: var(--pss-gold);
+  border-bottom: 1px solid var(--pss-gold-soft);
 }
 
 /* Section headings inside the tabs, given the gilded treatment. */

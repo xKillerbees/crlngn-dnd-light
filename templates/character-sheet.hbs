@@ -132,7 +132,7 @@
                         <span>{{localize "PF2E.PerceptionLabel"}}</span>
                     </a>
                     <div class="pss-tile">
-                        <b>{{pss.speed}}</b><span>{{localize "PF2E.SpeedLabel"}}</span>
+                        <b>{{pss.speed}}</b><span>{{localize "PF2E.Actor.Speed.Label"}}</span>
                     </div>
                     <a class="pss-tile pss-tile-roll" data-action="roll-initiative"
                        data-tooltip="COMBAT.InitiativeRoll">
@@ -158,7 +158,7 @@
                                value="{{data.attributes.hp.value}}" data-dtype="Number" data-allow-delta />
                         <span class="pss-hp-sep">/</span>
                         <span class="pss-hp-max">{{data.attributes.hp.max}}</span>
-                        <label class="pss-hp-temp-label">{{localize "PF2E.HitPointsTemporary"}}</label>
+                        <label class="pss-hp-temp-label">{{localize "PF2E.TempHitPointsShortLabel"}}</label>
                         <input type="text" name="system.attributes.hp.temp" placeholder="0"
                                value="{{data.attributes.hp.temp}}" data-dtype="Number" data-allow-delta data-min="0" />
                     </div>
@@ -175,7 +175,7 @@
                     {{/each}}
                     {{#if pss.classDC}}
                         <div class="pss-tile pss-tile-save">
-                            <b>{{pss.classDC}}</b><span>{{localize "PF2E.ClassDCLabel"}}</span>
+                            <b>{{pss.classDC}}</b><span>{{localize "PF2E.Actor.Character.ClassDC.Label"}}</span>
                         </div>
                     {{/if}}
                 </div>
