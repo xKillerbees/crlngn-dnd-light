@@ -124,12 +124,27 @@ function registerSheet(phase) {
   }
 
   class StyledCharacterSheetPF2e extends SystemSheet {
+    /**
+     * Preferred size, clamped to the viewport.
+     *
+     * Foundry centres a window with `(innerWidth - width) / 2` and clamps a negative
+     * result to zero, so a sheet wider than the browser window pins itself to the
+     * top-left corner and hangs off the screen — which is what a fixed 1180x860 did on
+     * anything smaller than a maximised desktop. Clamping keeps the centring maths
+     * positive, so it opens centred at whatever size actually fits.
+     */
     static get defaultOptions() {
       const options = super.defaultOptions;
+      const margin = 80;
+      // Order matters: floor first, then cap. Capping first and flooring after can
+      // hand back a size larger than the viewport on a small window — a 760 floor
+      // applied to an available 638 gives 760, which is the bug this is fixing.
+      const fit = (available, min, max) => Math.min(max, Math.max(min, available));
       return foundry.utils.mergeObject(options, {
         classes: [...(options.classes ?? []), "pf2e-styled-sheet"],
-        width: 1180,
-        height: 860,
+        width: fit(window.innerWidth - margin, 640, 1180),
+        height: fit(window.innerHeight - margin, 480, 880),
+        resizable: true,
       });
     }
 

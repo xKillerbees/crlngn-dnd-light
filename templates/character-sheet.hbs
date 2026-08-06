@@ -187,7 +187,10 @@
                 </div>
             </div>
 
-            <div class="pss-content-split">
+            {{!-- No wrapper around the body. The system styles the active tab as
+                  `height: 100%`, which needs a definite height from every ancestor;
+                  an intermediate grid whose row sized to content collapsed it to zero
+                  and made the sheet look like the navigation had stopped working. --}}
                 <section class="sheet-body pss-panel pss-body">
                     <section class="sheet-content">
                         {{> (resolvePath "templates/actors/character/tabs/character.hbs")}}
@@ -202,7 +205,6 @@
                         {{> (resolvePath "templates/actors/character/tabs/pfs.hbs")}}
                     </section>
                 </section>
-            </div>
         </section>
 
     </div>

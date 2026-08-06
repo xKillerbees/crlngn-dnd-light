@@ -173,13 +173,20 @@
   min-height: 0;
 }
 
-/* The tab content now spans the full width — the stats moved into tiles above it. */
-.pf2e-styled-sheet .pss-content-split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
+/*
+ * Height has to be definite the whole way down to the tab content.
+ *
+ * The system styles the active tab as `.sheet-body .sheet-content > .tab.active
+ * { display: flex; height: 100% }`. A percentage height resolves against the parent's
+ * *definite* height, so any ancestor that sizes to its content collapses the tab to
+ * nothing — the sheet then looks like the navigation has stopped working, because the
+ * tabs do switch but there is nowhere for them to render. Every link in this chain
+ * carries an explicit height or a flex basis with `min-height: 0` for that reason.
+ */
+.pf2e-styled-sheet .pss-col-content > .pss-body {
   flex: 1 1 auto;
   min-height: 0;
+  height: auto;
 }
 
 /* ---------------------------------------- */
