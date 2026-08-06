@@ -149,6 +149,39 @@ function registerSheet(phase) {
     }
 
     /**
+     * Centres the window once, after the first render has actually laid out.
+     *
+     * Clamping the size in defaultOptions was not enough on its own. Foundry positions
+     * a window during its first render and centres from the element's measured
+     * `offsetWidth`/`offsetHeight` — but at that moment this sheet has not finished
+     * laying out, because the portrait is still loading and the grid has not resolved.
+     * It therefore measures something far smaller than the final sheet, and the
+     * resulting offsets put it up in the top-left corner, which is why resizing by hand
+     * "fixed" it: that triggers a re-measure.
+     *
+     * Doing it after `super._render` measures the settled element instead. Guarded so
+     * it only runs once, otherwise every re-render would yank a window the user had
+     * deliberately moved back to the middle.
+     */
+    async _render(force, options) {
+      await super._render(force, options);
+      if (this.#centred) return;
+      this.#centred = true;
+
+      const el = this.element?.[0] ?? this.element;
+      if (!el) return;
+      const width = el.offsetWidth || this.options.width;
+      const height = el.offsetHeight || this.options.height;
+      this.setPosition({
+        left: Math.max(0, Math.round((window.innerWidth - width) / 2)),
+        top: Math.max(0, Math.round((window.innerHeight - height) / 2)),
+      });
+    }
+
+    /** Set after the first render so later renders leave the user's position alone. */
+    #centred = false;
+
+    /**
      * The one override that matters. Limited-permission actors fall through to the
      * system's own limited sheet: it shows a deliberately reduced view, and
      * reimplementing that would risk leaking data this sheet has no business showing.

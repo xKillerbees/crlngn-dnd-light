@@ -647,6 +647,11 @@
   --color-pf-secondary: var(--pss-bronze);
   --color-pf-alternate: var(--pss-text-dim);
   --color-pf-alternate-light: var(--pss-text-dim);
+  /* Fills the strike/damage tag buttons. Left at the system's #443730 it reads as
+     a black slab against the dark panels — the two "-dark" variants were the ones
+     missed in v0.4.0's pass. */
+  --color-pf-alternate-dark: rgba(138, 109, 59, 0.3);
+  --color-pf-alternate-darker: rgba(0, 0, 0, 0.4);
 
   --color-border-divider: rgba(138, 109, 59, 0.35);
   --color-border-light-tertiary: rgba(138, 109, 59, 0.3);
@@ -700,6 +705,46 @@
   --color-pf-text-success: #6f9ede;
   --color-pf-text-failure: #e08a4a;
   --color-pf-text-critical-failure: #e05c5c;
+}
+
+/* ---------------------------------------- */
+/*  Strike and tag buttons                  */
+/* ---------------------------------------- */
+/*
+ * The strike row's buttons — STRIKE, the MAP variants, DAMAGE, CRITICAL — are `.tag`
+ * elements inside a `.button-group` (see the system's strike.hbs). They inherit fills
+ * from the `--color-pf-alternate-*` family, which is tuned for the system's light
+ * parchment and collapses to near-black here. Styled explicitly rather than left to
+ * variable inheritance, because these are the controls most used mid-session and
+ * "readable" matters more than "inherited".
+ */
+
+.pf2e-styled-sheet .pss-body .button-group .tag,
+.pf2e-styled-sheet .pss-body .tags:not(.light) > .tag:not(.rarity):not(.light) {
+  background: linear-gradient(180deg, var(--pss-raised) 0%, var(--pss-panel) 100%);
+  border: 1px solid rgba(138, 109, 59, 0.45);
+  color: var(--pss-text);
+  text-shadow: none;
+}
+
+.pf2e-styled-sheet .pss-body .button-group .tag:hover {
+  border-color: var(--pss-gold);
+  color: var(--pss-gold);
+}
+
+/* Damage and critical read as the destructive pair, so they carry the blood tone. */
+.pf2e-styled-sheet .pss-body .button-group .tag.damage,
+.pf2e-styled-sheet .pss-body .button-group .tag.critical {
+  background: linear-gradient(180deg, #5e2020 0%, var(--pss-blood) 100%);
+  border-color: rgba(192, 57, 43, 0.6);
+  color: #f2e2d0;
+}
+
+.pf2e-styled-sheet .pss-body .button-group .tag.damage:hover,
+.pf2e-styled-sheet .pss-body .button-group .tag.critical:hover {
+  background: linear-gradient(180deg, #7a2a2a 0%, #8f2626 100%);
+  border-color: var(--pss-blood-bright);
+  color: #fff;
 }
 
 /* ---------------------------------------- */
