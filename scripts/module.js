@@ -168,11 +168,23 @@ function registerSheet(phase) {
       if (this.#centred) return;
       this.#centred = true;
 
+      // Two frames, not one. The first lets the browser apply styles; the second lets
+      // the grid and the portrait settle. Measuring earlier than this is what put the
+      // window in the corner in the first place.
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
       const el = this.element?.[0] ?? this.element;
       if (!el) return;
-      const width = el.offsetWidth || this.options.width;
-      const height = el.offsetHeight || this.options.height;
+
+      // Width and height are passed explicitly rather than measured. The intended size
+      // is already known from defaultOptions, and re-deriving it from the element makes
+      // the result depend on whatever the layout happens to be mid-render — which is
+      // how the sheet ended up opening narrow and cramped.
+      const width = this.options.width;
+      const height = this.options.height;
       this.setPosition({
+        width,
+        height,
         left: Math.max(0, Math.round((window.innerWidth - width) / 2)),
         top: Math.max(0, Math.round((window.innerHeight - height) / 2)),
       });

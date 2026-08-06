@@ -191,7 +191,11 @@
   display: grid;
   /* Portrait column is fixed rather than fractional: it holds one image, and letting
      it flex made the image shrink on narrower windows, which is the whole look. */
-  grid-template-columns: 218px 300px minmax(420px, 1fr);
+  /* Content floor is 360, not 420: with 218 + 300 + gaps + padding that puts the
+     three-column minimum at 918px, safely under the 940px breakpoint below. A wider
+     floor left a band where the columns overflowed instead of folding — which is
+     what shifted panels around while resizing. */
+  grid-template-columns: 218px 300px minmax(360px, 1fr);
   gap: 10px;
   padding: 10px;
   height: 100%;
@@ -647,11 +651,18 @@
   --color-pf-secondary: var(--pss-bronze);
   --color-pf-alternate: var(--pss-text-dim);
   --color-pf-alternate-light: var(--pss-text-dim);
-  /* Fills the strike/damage tag buttons. Left at the system's #443730 it reads as
-     a black slab against the dark panels — the two "-dark" variants were the ones
-     missed in v0.4.0's pass. */
-  --color-pf-alternate-dark: rgba(138, 109, 59, 0.3);
-  --color-pf-alternate-darker: rgba(0, 0, 0, 0.4);
+  /*
+   * This one carries two incompatible jobs in the system: it fills the strike/damage
+   * tag buttons *and* colours the speed labels
+   * (`.subsection.speeds .speed .label { color: var(--color-pf-alternate-dark) }`).
+   * v0.4.1 set it to a 30%-alpha bronze to stop the buttons reading black, which made
+   * the speed labels almost invisible. No single value satisfies both.
+   *
+   * So it is set to a readable *text* colour, and the button fills are handled by
+   * explicit rules further down instead of by inheritance.
+   */
+  --color-pf-alternate-dark: var(--pss-text-dim);
+  --color-pf-alternate-darker: var(--pss-bronze);
 
   --color-border-divider: rgba(138, 109, 59, 0.35);
   --color-border-light-tertiary: rgba(138, 109, 59, 0.3);
@@ -719,29 +730,49 @@
  * "readable" matters more than "inherited".
  */
 
-.pf2e-styled-sheet .pss-body .button-group .tag,
-.pf2e-styled-sheet .pss-body .tags:not(.light) > .tag:not(.rarity):not(.light) {
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body .button-group .tag,
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body .tags:not(.light) > .tag:not(.rarity):not(.light) {
   background: linear-gradient(180deg, var(--pss-raised) 0%, var(--pss-panel) 100%);
   border: 1px solid rgba(138, 109, 59, 0.45);
   color: var(--pss-text);
   text-shadow: none;
 }
 
-.pf2e-styled-sheet .pss-body .button-group .tag:hover {
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body .button-group .tag:hover {
   border-color: var(--pss-gold);
   color: var(--pss-gold);
 }
 
-/* Damage and critical read as the destructive pair, so they carry the blood tone. */
-.pf2e-styled-sheet .pss-body .button-group .tag.damage,
-.pf2e-styled-sheet .pss-body .button-group .tag.critical {
+/*
+ * Damage and critical read as the destructive pair, so they carry the blood tone.
+ *
+ * The second selector here is not redundant. The generic rule above also lists
+ * `.tags:not(.light) > .tag:not(.rarity):not(.light)`, and `:not()` arguments count
+ * toward specificity — that branch is 12 classes, while a plain
+ * `.button-group .tag.damage` is only 10. Without matching the chain, the generic
+ * rule silently outranked this one and damage buttons rendered identically to the
+ * ordinary ones. Caught by comparing computed backgrounds, not by reading the file.
+ */
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body .button-group .tag.damage,
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body .button-group .tag.critical,
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body .tags:not(.light) > .tag.damage:not(.rarity):not(.light),
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body .tags:not(.light) > .tag.critical:not(.rarity):not(.light) {
   background: linear-gradient(180deg, #5e2020 0%, var(--pss-blood) 100%);
   border-color: rgba(192, 57, 43, 0.6);
   color: #f2e2d0;
 }
 
-.pf2e-styled-sheet .pss-body .button-group .tag.damage:hover,
-.pf2e-styled-sheet .pss-body .button-group .tag.critical:hover {
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body .button-group .tag.damage:hover,
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body .button-group .tag.critical:hover {
   background: linear-gradient(180deg, #7a2a2a 0%, #8f2626 100%);
   border-color: var(--pss-blood-bright);
   color: #fff;
@@ -757,8 +788,10 @@
  * strips and glared white against the dark panels.
  */
 
-.pf2e-styled-sheet .pss-body nav.actions-nav,
-.pf2e-styled-sheet .pss-body nav[data-group="spell-collections"] {
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body nav.actions-nav,
+.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet.pf2e-styled-sheet
+  form.crb-style .pss-body nav[data-group="spell-collections"] {
   background: linear-gradient(180deg, var(--pss-raised) 0%, var(--pss-panel) 100%);
   border: 1px solid rgba(138, 109, 59, 0.4);
   border-radius: 2px;
@@ -829,14 +862,27 @@
  * degrades most gracefully, so it folds under the content rather than being dropped.
  */
 
-@container pss-sheet (max-width: 900px) {
+/*
+ * Breakpoint sits just above the three-column minimum (918px), so the layout folds
+ * before it can overflow. At 900 there was a 900-918 band where the columns were
+ * wider than the container and panels drifted out of place while resizing.
+ */
+@container pss-sheet (max-width: 940px) {
   .pf2e-styled-sheet .pss-frame {
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: 190px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
   }
+  /* Portrait folds under the content rather than being dropped: it is the element
+     that survives shrinking best, and losing it loses the look entirely. */
   .pf2e-styled-sheet .pss-col-portrait {
     grid-column: 1 / -1;
     grid-row: 2;
     flex-direction: row;
   }
-  .pf2e-styled-sheet .pss-portrait-panel { min-height: 180px; }
+  .pf2e-styled-sheet .pss-portrait-panel {
+    min-height: 150px;
+    max-height: 220px;
+  }
+  .pf2e-styled-sheet .pss-tiles-primary { grid-template-columns: repeat(2, 1fr); }
+  .pf2e-styled-sheet .pss-tiles-abilities { grid-template-columns: repeat(3, 1fr); }
 }
