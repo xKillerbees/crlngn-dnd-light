@@ -125,73 +125,37 @@ function registerSheet(phase) {
 
   class StyledCharacterSheetPF2e extends SystemSheet {
     /**
-     * Preferred size, clamped to the viewport.
+     * Size *and position*, both decided up front.
      *
-     * Foundry centres a window with `(innerWidth - width) / 2` and clamps a negative
-     * result to zero, so a sheet wider than the browser window pins itself to the
-     * top-left corner and hangs off the screen — which is what a fixed 1180x860 did on
-     * anything smaller than a maximised desktop. Clamping keeps the centring maths
-     * positive, so it opens centred at whatever size actually fits.
+     * Three earlier attempts tried to correct the position after rendering — clamping
+     * the size, then re-centring on measured dimensions, then waiting two animation
+     * frames before measuring. All of them still opened in the top-left corner, because
+     * they all shared the same flaw: they depended on measuring an element mid-layout,
+     * and no amount of waiting makes that reliable when a portrait is still decoding.
+     *
+     * ApplicationV1 accepts `left` and `top` as options and uses them as the initial
+     * position, so there is nothing to measure and nothing to correct. Foundry only
+     * computes its own centring when these are null — supplying them takes that path
+     * out of play entirely, and the window is in the right place on the first paint.
      */
     static get defaultOptions() {
       const options = super.defaultOptions;
       const margin = 80;
-      // Order matters: floor first, then cap. Capping first and flooring after can
-      // hand back a size larger than the viewport on a small window — a 760 floor
-      // applied to an available 638 gives 760, which is the bug this is fixing.
+      // Floor first, then cap. Capping first and flooring after can hand back a size
+      // larger than the viewport — a 640 floor applied to an available 560 gives 640.
       const fit = (available, min, max) => Math.min(max, Math.max(min, available));
+      const width = fit(window.innerWidth - margin, 640, 1180);
+      const height = fit(window.innerHeight - margin, 480, 880);
+
       return foundry.utils.mergeObject(options, {
         classes: [...(options.classes ?? []), "pf2e-styled-sheet"],
-        width: fit(window.innerWidth - margin, 640, 1180),
-        height: fit(window.innerHeight - margin, 480, 880),
-        resizable: true,
-      });
-    }
-
-    /**
-     * Centres the window once, after the first render has actually laid out.
-     *
-     * Clamping the size in defaultOptions was not enough on its own. Foundry positions
-     * a window during its first render and centres from the element's measured
-     * `offsetWidth`/`offsetHeight` — but at that moment this sheet has not finished
-     * laying out, because the portrait is still loading and the grid has not resolved.
-     * It therefore measures something far smaller than the final sheet, and the
-     * resulting offsets put it up in the top-left corner, which is why resizing by hand
-     * "fixed" it: that triggers a re-measure.
-     *
-     * Doing it after `super._render` measures the settled element instead. Guarded so
-     * it only runs once, otherwise every re-render would yank a window the user had
-     * deliberately moved back to the middle.
-     */
-    async _render(force, options) {
-      await super._render(force, options);
-      if (this.#centred) return;
-      this.#centred = true;
-
-      // Two frames, not one. The first lets the browser apply styles; the second lets
-      // the grid and the portrait settle. Measuring earlier than this is what put the
-      // window in the corner in the first place.
-      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-      const el = this.element?.[0] ?? this.element;
-      if (!el) return;
-
-      // Width and height are passed explicitly rather than measured. The intended size
-      // is already known from defaultOptions, and re-deriving it from the element makes
-      // the result depend on whatever the layout happens to be mid-render — which is
-      // how the sheet ended up opening narrow and cramped.
-      const width = this.options.width;
-      const height = this.options.height;
-      this.setPosition({
         width,
         height,
         left: Math.max(0, Math.round((window.innerWidth - width) / 2)),
         top: Math.max(0, Math.round((window.innerHeight - height) / 2)),
+        resizable: true,
       });
     }
-
-    /** Set after the first render so later renders leave the user's position alone. */
-    #centred = false;
 
     /**
      * The one override that matters. Limited-permission actors fall through to the
@@ -229,6 +193,33 @@ function registerSheet(phase) {
         // Percentage for the HP bar's width. Clamped because temporary overheal and
         // a zero max both produce values that break the bar.
         hpPct: Math.max(0, Math.min(100, hp.max ? Math.round((hp.value / hp.max) * 100) : 0)),
+        // Drives the bar's colour shift. A threshold beats a gradient here: the point is
+        // to be noticeable across the table mid-combat, not to be subtle.
+        hpLow: hp.max ? hp.value / hp.max <= 0.25 : false,
+
+        // Dying / wounded / doomed, as pip arrays the template can iterate. Built here
+        // rather than with a Handlebars counting helper so the filled/empty state is
+        // decided in one place. `max` is read from the actor because dying's maximum
+        // moves with the doomed condition — hardcoding 4 would misreport a doomed PC.
+        conditions: ["dying", "wounded", "doomed"].map((slug) => {
+          const c = actor.system?.attributes?.[slug] ?? {};
+          const max = Number(c.max) || (slug === "dying" ? 4 : 3);
+          const value = Math.max(0, Math.min(max, Number(c.value) || 0));
+          return {
+            slug,
+            value,
+            max,
+            active: value > 0,
+            pips: Array.from({ length: max }, (_, i) => ({ filled: i < value })),
+          };
+        }),
+
+        xp: (() => {
+          const xp = actor.system?.details?.xp ?? {};
+          const max = Number(xp.max) || 1000;
+          const value = Number(xp.value) || 0;
+          return { value, max, pct: Math.max(0, Math.min(100, Math.round((value / max) * 100))) };
+        })(),
       };
       return data;
     }

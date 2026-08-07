@@ -150,7 +150,7 @@
                     {{/each}}
                 </div>
 
-                <div class="pss-hp">
+                <div class="pss-hp{{#if pss.hpLow}} is-low{{/if}}">
                     <div class="pss-hp-bar"><span style="width: {{pss.hpPct}}%"></span></div>
                     <div class="pss-hp-fields">
                         <label>{{localize "PF2E.HitPointsHeader"}}</label>
@@ -162,6 +162,39 @@
                         <input type="text" name="system.attributes.hp.temp" placeholder="0"
                                value="{{data.attributes.hp.temp}}" data-dtype="Number" data-allow-delta data-min="0" />
                     </div>
+                </div>
+
+                {{!-- Conditions and XP, from the reference. `adjust-condition-value` is
+                      the system's own handler, so the arrows increment and decrement
+                      exactly as they do on its sidebar; `recovery-check` rolls the flat
+                      check when dying. --}}
+                <div class="pss-conditions">
+                    {{#each pss.conditions as |condition|}}
+                        <div class="pss-condition{{#if condition.active}} is-active{{/if}}"
+                             data-condition="{{condition.slug}}">
+                            <span class="pss-condition-name">{{localize (concat "PF2E.condition." condition.slug ".name")}}</span>
+                            <div class="pss-pips">
+                                {{#each condition.pips as |pip|}}
+                                    <i class="pss-pip{{#if pip.filled}} filled{{/if}}"></i>
+                                {{/each}}
+                            </div>
+                            <div class="pss-condition-value">
+                                <a data-action="adjust-condition-value" data-condition="{{condition.slug}}"
+                                   data-direction="decrease" aria-label="-"><i class="fa-solid fa-minus"></i></a>
+                                <span>{{condition.value}}/{{condition.max}}</span>
+                                <a data-action="adjust-condition-value" data-condition="{{condition.slug}}"
+                                   data-direction="increase" aria-label="+"><i class="fa-solid fa-plus"></i></a>
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+
+                <div class="pss-xp">
+                    <div class="pss-xp-bar"><span style="width: {{pss.xp.pct}}%"></span></div>
+                    <label>{{localize "PF2E.Encounter.XP"}}</label>
+                    <input type="text" name="system.details.xp.value" value="{{pss.xp.value}}"
+                           data-dtype="Number" data-allow-delta />
+                    <span class="pss-xp-max">/ {{pss.xp.max}}</span>
                 </div>
 
                 <div class="pss-tiles pss-tiles-saves">

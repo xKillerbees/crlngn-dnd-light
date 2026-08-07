@@ -306,8 +306,36 @@
 .pf2e-styled-sheet .pss-hp-bar > span {
   display: block;
   height: 100%;
-  background: linear-gradient(180deg, var(--pss-blood-bright), var(--pss-blood));
-  transition: width 200ms ease;
+  /* Gloss along the top edge, so the bar reads as a filled vessel rather than a block. */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, transparent 45%),
+    linear-gradient(180deg, var(--pss-blood-bright), var(--pss-blood));
+  transition: width 240ms ease, box-shadow 240ms ease;
+}
+
+/*
+ * At or below a quarter health the bar starts breathing. Chosen over a continuous
+ * colour ramp because the job is to be noticed from across the table mid-combat —
+ * a threshold reads instantly, a gradient does not. Honoured only when the viewer
+ * has not asked for reduced motion.
+ */
+.pf2e-styled-sheet .pss-hp.is-low .pss-hp-bar > span {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 45%),
+    linear-gradient(180deg, #ff5b4d, #c0392b);
+  box-shadow: 0 0 12px rgba(224, 60, 45, 0.85);
+  animation: pss-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pss-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.35); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf2e-styled-sheet .pss-hp.is-low .pss-hp-bar > span { animation: none; }
+  .pf2e-styled-sheet .pss-hp-bar > span,
+  .pf2e-styled-sheet .pss-xp-bar > span { transition: none; }
 }
 
 .pf2e-styled-sheet .pss-hp-fields {
@@ -335,6 +363,119 @@
 }
 
 .pf2e-styled-sheet .pss-hp-temp-label { margin-left: auto; }
+
+/* ---------------------------------------- */
+/*  Conditions: dying / wounded / doomed    */
+/* ---------------------------------------- */
+
+.pf2e-styled-sheet .pss-conditions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.pf2e-styled-sheet .pss-condition {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 4px;
+  background: linear-gradient(180deg, var(--pss-raised) 0%, var(--pss-panel) 100%);
+  border: 1px solid rgba(138, 109, 59, 0.35);
+  border-radius: 2px;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+/* A condition at zero is background information; one above zero should catch the eye. */
+.pf2e-styled-sheet .pss-condition.is-active {
+  border-color: rgba(192, 57, 43, 0.65);
+  box-shadow: 0 0 10px rgba(192, 57, 43, 0.25), inset 0 0 14px rgba(124, 31, 31, 0.25);
+}
+
+.pf2e-styled-sheet .pss-condition-name {
+  font-size: 0.56rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pss-text-dim);
+}
+
+.pf2e-styled-sheet .pss-condition.is-active .pss-condition-name { color: #e2a19a; }
+
+.pf2e-styled-sheet .pss-pips {
+  display: flex;
+  gap: 3px;
+}
+
+.pf2e-styled-sheet .pss-pip {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid var(--pss-bronze);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.pf2e-styled-sheet .pss-pip.filled {
+  background: radial-gradient(circle at 35% 30%, #d4564a, var(--pss-blood));
+  border-color: var(--pss-blood-bright);
+  box-shadow: 0 0 6px rgba(192, 57, 43, 0.6);
+}
+
+.pf2e-styled-sheet .pss-condition-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.58rem;
+  color: var(--pss-text-dim);
+}
+
+.pf2e-styled-sheet .pss-condition-value > a {
+  color: var(--pss-bronze);
+  cursor: pointer;
+  font-size: 0.55rem;
+  line-height: 1;
+}
+
+.pf2e-styled-sheet .pss-condition-value > a:hover { color: var(--pss-gold); }
+
+/* ---------------------------------------- */
+/*  Experience                              */
+/* ---------------------------------------- */
+
+.pf2e-styled-sheet .pss-xp {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pss-text-dim);
+}
+
+.pf2e-styled-sheet .pss-xp-bar {
+  flex: 1 1 auto;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(138, 109, 59, 0.4);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.pf2e-styled-sheet .pss-xp-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--pss-gold-dim), var(--pss-gold));
+  box-shadow: 0 0 8px rgba(201, 162, 39, 0.5);
+  transition: width 240ms ease;
+}
+
+.pf2e-styled-sheet .pss-xp input {
+  width: 3.6rem;
+  text-align: center;
+  font-family: var(--pss-serif);
+  font-size: 0.85rem;
+}
+
+.pf2e-styled-sheet .pss-xp-max { font-family: var(--pss-serif); font-size: 0.8rem; }
 
 /* ---------------------------------------- */
 /*  Defence editors                         */
@@ -521,6 +662,20 @@
   background: linear-gradient(90deg, rgba(201, 162, 39, 0.22), rgba(201, 162, 39, 0.04));
   border-color: var(--pss-gold-soft);
 }
+
+/* A lit gold edge on the active entry — the rail reads as a menu rather than a list. */
+.pf2e-styled-sheet nav.pss-nav > a.item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12%;
+  bottom: 12%;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--pss-gold), transparent);
+  box-shadow: 0 0 8px rgba(201, 162, 39, 0.8);
+}
+
+.pf2e-styled-sheet nav.pss-nav > a.item { position: relative; }
 
 .pf2e-styled-sheet nav.pss-nav > a.item.active > i {
   color: var(--pss-gold);
